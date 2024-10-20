@@ -226,3 +226,6 @@ cython_debug/
 .idea/
 .DS_Store
 pyvenv.cfg
+.gitignore
+bin
+bin/
