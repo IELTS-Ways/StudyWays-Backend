@@ -39,6 +39,35 @@ class FreelanceStudent(APIView):
             student_profile.freelance = FreelanceProfile.objects.get(user=self.request.user)
             student_profile.gender = data["gender"]
             student_profile.english_level = data["english_level"]
+            student_profile.education = data["education"]
+            student_profile.majors_name = data["majors_name"]
             student_profile.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
+class FreelanceStudentMultiple(APIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsFreelance]
+
+    def post(self, *args, **kwargs):
+        data = self.request.data
+        data["password"] = "12345678"
+        data["user_type"] = "student"
+        serializer = self.serializer_class(data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            student_user = User.objects.get(id=serializer.data["id"])
+            student_user.set_password(data["password"])
+            student_user.save()
+            student_profile = StudentProfile.objects.get(user=student_user)
+            student_profile.freelance = FreelanceProfile.objects.get(user=self.request.user)
+            student_profile.gender = data["gender"]
+            student_profile.english_level = data["english_level"]
+            student_profile.education = data["education"]
+            student_profile.majors_name = data["majors_name"]
+            student_profile.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+

@@ -40,6 +40,8 @@ class InstituteStudent(APIView):
             student_profile.institute = InstituteProfile.objects.get(user=self.request.user)
             student_profile.gender = data["gender"]
             student_profile.english_level = data["english_level"]
+            student_profile.education = data["education"]
+            student_profile.majors_name = data["majors_name"]
             student_profile.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
