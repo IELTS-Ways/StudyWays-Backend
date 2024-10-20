@@ -1,0 +1,5 @@
+python manage.py dumpdata accounts --indent 2 > backup/accounts.json
+python manage.py dumpdata file --indent 2 > backup/file.json
+python manage.py dumpdata blog --indent 2 > backup/blog.json
+python manage.py dumpdata subscription --indent 2 > backup/subscription.json
+python manage.py dumpdata service --indent 2 > backup/service.json
