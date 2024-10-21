@@ -36,6 +36,6 @@ class FreelanceProfile(models.Model):
 
 
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
+def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == "freelance":
         FreelanceProfile.objects.create(user=instance)
