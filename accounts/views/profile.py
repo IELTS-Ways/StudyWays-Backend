@@ -11,7 +11,7 @@ import re
 from django.utils.translation import gettext as _
 from rest_framework.throttling import AnonRateThrottle
 from accounts.functions import send_sms_otp
-from accounts.models import OneTimePassword, User
+from accounts.models import OneTimePassword, User, InstituteProfile, MarketerPanel, FreelanceProfile
 
 
 
@@ -28,6 +28,11 @@ class Profile(APIView):
         serializer = UserUpdateSerializer(profile, data=self.request.data)
         if serializer.is_valid():
             serializer.save()
+            if self.request.user.user_type == "freelance":
+                FreelanceProfile.objects.create(user=self.request.user)
+            elif self.request.user.user_type == "institute":
+                InstituteProfile.objects.create(user=self.request.user)
+            elif self.request.user.user_type == "marketer":
+                MarketerPanel.objects.create(user=self.request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
-
