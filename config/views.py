@@ -77,13 +77,16 @@ class GoogleRedirectURIView(APIView):
 
                         access, refresh = login(user)
 
+
                         data = {
                             "refresh_token": refresh,
                             "access_token": access,
                             "user_id": user.id,
                             "user_user_type": user.user_type,
                             "user_first_name": user.first_name,
-                            "user_last_name": user.last_name
+                            "user_last_name": user.last_name,
+                            "user_email": user.email,
+                            "is_profile_fill": user.is_profile_fill()
                         }
                         '''   
                         response = Response(

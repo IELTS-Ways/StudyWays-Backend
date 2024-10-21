@@ -144,6 +144,7 @@ class File(models.Model):
 
     skill_type_choices = (
         ("Writing", "Writing"),
+        ("WritingWithMedia", "WritingWithMedia"),
         ("Reading", "Reading"),
         ("Listening", "Listening"),
         ("Video", "Video"),
