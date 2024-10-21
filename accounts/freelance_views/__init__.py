@@ -1,3 +1,3 @@
 from accounts.freelance_views.overview import FreelanceOverview
 from accounts.freelance_views.freelance import Freelance,FreelanceFull
-from accounts.freelance_views.freelance_student import FreelanceStudent,FreelanceStudentMultiple
+from accounts.freelance_views.freelance_student import FreelanceStudent,FreelanceStudentMultiple,FreelanceStudentItem

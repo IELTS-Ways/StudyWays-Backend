@@ -3,7 +3,8 @@ from accounts.views import Logout,Profile,Refresh,RefreshAccess,OverView,SendOTP
 from accounts.student_views import StudentLogin,StudentOverview,StudentInstituteData
 from accounts.institute_views import InstituteOverview,Institute,InstituteStudent,ZarinpalMerchantID,InstituteFull,\
     InstituteStudentMultiple,InstituteStudentItem
-from accounts.freelance_views import FreelanceOverview,Freelance,FreelanceStudent,FreelanceFull,FreelanceStudentMultiple
+from accounts.freelance_views import FreelanceOverview,Freelance,FreelanceStudent,FreelanceFull,FreelanceStudentMultiple,\
+    FreelanceStudentItem
 from accounts.management_panel_view import InstituteLists,StudentLists,FreelanceLists
 from accounts.visitors_views import InstituteLists as VisitList
 from accounts.management_panel_view import InstituteLists,StudentLists,FreelanceLists
@@ -36,6 +37,7 @@ urlpatterns = [
     path("freelance", Freelance.as_view(), name="institute"),
     path("freelance-full", FreelanceFull.as_view(), name="freelance-full"),
     path("freelance-student", FreelanceStudent.as_view(), name="institute-student"),
+    path("freelance-student-item/<int:id>", FreelanceStudentItem.as_view(), name="freelance-student-item"),
     path("freelance-student-multiple", FreelanceStudentMultiple.as_view(), name="institute-student-multiple"),
     #
     path("marketer-overview", MarketerOverview.as_view(), name="marketer-overview"),
