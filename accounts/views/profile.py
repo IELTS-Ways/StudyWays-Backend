@@ -28,11 +28,12 @@ class Profile(APIView):
         serializer = UserUpdateSerializer(profile, data=self.request.data)
         if serializer.is_valid():
             serializer.save()
-            if self.request.user.user_type == "freelance":
-                FreelanceProfile.objects.create(user=self.request.user)
-            elif self.request.user.user_type == "institute":
-                InstituteProfile.objects.create(user=self.request.user)
-            elif self.request.user.user_type == "marketer":
-                MarketerPanel.objects.create(user=self.request.user)
+            user = self.request.user
+            if user.user_type == "freelance":
+                FreelanceProfile.objects.get_or_create(user=user)
+            elif user.user_type == "institute":
+                InstituteProfile.objects.get_or_create(user=user)
+            elif user.user_type == "marketer":
+                MarketerPanel.objects.get_or_create(user=user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
