@@ -91,6 +91,7 @@ LOCAL_APPS = (
     "subscription",
     "blog",
     "service",
+    "contact",
 )
 
 
