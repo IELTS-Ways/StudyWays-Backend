@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from accounts.serializers import UserSerializer, InstituteSerializer, StudentProfileSerializer
+from accounts.serializers import UserSerializer, InstituteSerializer, StudentProfileSerializer, UserUpdateSerializer
 from accounts.models import User,InstituteProfile,StudentProfile
 from accounts.views.permissions.is_institute import IsInstitute
 from accounts.models.institute_profile import InstituteProfile
@@ -86,3 +86,46 @@ class InstituteStudentMultiple(APIView):
             student_profile.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
+
+class InstituteStudentItem(APIView):
+    serializer_class = StudentProfileSerializer
+    permission_classes = [IsInstitute]
+    def get(self, *args, **kwargs):
+        try:
+            institute = InstituteProfile.objects.get(user=self.request.user)
+            student = StudentProfile.objects.get(id=self.kwargs["id"],institute=institute)
+            serializer = self.serializer_class(student)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response("Student not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, *args, **kwargs):
+        try:
+            institute = InstituteProfile.objects.get(user=self.request.user)
+            student = StudentProfile.objects.get(id=self.kwargs["id"],institute=institute)
+
+            user_serializer = UserUpdateSerializer(student.user, data=self.request.data, partial=True)
+            if user_serializer.is_valid():
+                user_serializer.save()
+
+            serializer = self.serializer_class(student, data=self.request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except:
+            return Response("Student not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, *args, **kwargs):
+        try:
+            institute = InstituteProfile.objects.get(user=self.request.user)
+            student = StudentProfile.objects.get(id=self.kwargs["id"],institute=institute)
+            student.delete()
+            return Response("Student deleted.", status=status.HTTP_200_OK)
+        except:
+            return Response("Student not found or something went wrong, try again.", status=status.HTTP_400_BAD_REQUEST)
+

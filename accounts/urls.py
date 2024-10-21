@@ -1,7 +1,8 @@
 from django.urls import path
 from accounts.views import Logout,Profile,Refresh,RefreshAccess,OverView,SendOTP,VerifyOTP,UserValidationView
 from accounts.student_views import StudentLogin,StudentOverview,StudentInstituteData
-from accounts.institute_views import InstituteOverview,Institute,InstituteStudent,ZarinpalMerchantID,InstituteFull,InstituteStudentMultiple
+from accounts.institute_views import InstituteOverview,Institute,InstituteStudent,ZarinpalMerchantID,InstituteFull,\
+    InstituteStudentMultiple,InstituteStudentItem
 from accounts.freelance_views import FreelanceOverview,Freelance,FreelanceStudent,FreelanceFull,FreelanceStudentMultiple
 from accounts.management_panel_view import InstituteLists,StudentLists,FreelanceLists
 from accounts.visitors_views import InstituteLists as VisitList
@@ -27,6 +28,7 @@ urlpatterns = [
     path("institute", Institute.as_view(), name="institute"),
     path("institute-full", InstituteFull.as_view(), name="institute-full"),
     path("institute-student", InstituteStudent.as_view(), name="institute-student"),
+    path("institute-student-item/<int:id>", InstituteStudentItem.as_view(), name="institute-student-item"),
     path("institute-student-multiple", InstituteStudentMultiple.as_view(), name="institute-student-multiple"),
     path("zp-id", ZarinpalMerchantID.as_view(), name="zp-id"),
     #
