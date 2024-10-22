@@ -1,8 +1,10 @@
 from django.urls import path, re_path
-from blog.views import PostList, PostItem, InstitutePosts, StudentPosts, AddPost, upload_photo, download_photo, delete_photo
+from blog.views import PostList, PostItem, InstitutePosts, StudentPosts, AddPost, upload_photo,\
+    download_photo, delete_photo, PostCats
 
 
 urlpatterns = [
+    path("post-cats", PostCats.as_view(), name="post-cats"),
     path("posts", PostList.as_view(), name="posts"),
     path('post-item/<int:id>', PostItem.as_view(), name='post-item'),
     path("institute-posts", InstitutePosts.as_view(), name="institute-posts"),
