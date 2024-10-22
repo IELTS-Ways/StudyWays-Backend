@@ -11,7 +11,7 @@ import re
 from django.utils.translation import gettext as _
 from rest_framework.throttling import AnonRateThrottle
 from accounts.functions import send_sms_otp
-from accounts.models import OneTimePassword, User, InstituteProfile, MarketerPanel, FreelanceProfile
+from accounts.models import OneTimePassword,User,InstituteProfile,MarketerPanel,FreelanceProfile,StudentProfile
 
 
 
@@ -24,8 +24,9 @@ class Profile(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, *args, **kwargs):
+        data = self.request.data
         profile = User.objects.get(id=self.request.user.id)
-        serializer = UserUpdateSerializer(profile, data=self.request.data)
+        serializer = UserUpdateSerializer(profile, data=data)
         if serializer.is_valid():
             serializer.save()
             user = self.request.user
@@ -35,5 +36,15 @@ class Profile(APIView):
                 InstituteProfile.objects.get_or_create(user=user)
             elif user.user_type == "marketer":
                 MarketerPanel.objects.get_or_create(user=user)
+            elif user.user_type == "student":
+                if data["parent"] == "freelance":
+                    StudentProfile.objects.get_or_create( user=user, freelance=FreelanceProfile.objects.get(id=data["parent_id"]) )
+                elif data["parent"] == "institute":
+                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=data["parent_id"]) )
+                elif data["parent"] == "not":
+                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=10) )
+                else:
+                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=10) )
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
