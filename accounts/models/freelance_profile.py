@@ -18,6 +18,7 @@ class FreelanceProfile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     provinces = models.CharField(max_length=100, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
+    postal_code = models.CharField(max_length=100, blank=True, null=True)
     occupancy_type = models.CharField(max_length=100, default="Office", choices=address_type_choices)
     logo = models.ImageField(upload_to="institute_logo", blank=True, null=True)
     cover = models.ImageField(upload_to="institute_cover", blank=True, null=True)

@@ -13,8 +13,8 @@ class MarketerPanel(models.Model):
     province = models.CharField(max_length=256, blank=True, null=True)
     city = models.CharField(max_length=256, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
+    postal_code = models.CharField(max_length=100, blank=True, null=True)
     occupancy_type = models.CharField(max_length=100, default="Personal Residence", choices=address_type_choices)
-    postal_code = models.CharField(max_length=256, blank=True, null=True)
     description = models.TextField(max_length=4000, blank=True, null=True)
     revenue = models.IntegerField(default=0, blank=True, null=True)
 
