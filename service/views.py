@@ -6,7 +6,7 @@ from service.models import Service, MultipleSpellings, HyphenatedAdjectives
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
 from accounts.models import InstituteProfile, StudentProfile
-from accounts.serializers import UserSerializer
+from accounts.serializers import StudentProfileSerializer
 import difflib
 from difflib import SequenceMatcher, unified_diff, get_close_matches, HtmlDiff, ndiff
 import re
@@ -272,7 +272,7 @@ class ServicesCorrection(APIView):
 
             punctuation_result = compare_punctuation(service.text, service.file.script)
 
-            correction_data = {"file_user": UserSerializer(service.user).data,
+            correction_data = {"file_user": StudentProfileSerializer(service.user).data,
                                "file_script": service.file.script,
                                "student_text":service_text,
                                "differences":differences,
