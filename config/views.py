@@ -108,5 +108,5 @@ class GoogleRedirectURIView(APIView):
 
                         query_string = urlencode(data)
                         request.session['data'] = data
-                        redirect_url = "https://studyways.ir/check-user?" + query_string
+                        redirect_url = "https://app.studyways.ir/check-user?" + query_string
                         return redirect(redirect_url)

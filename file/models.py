@@ -151,6 +151,7 @@ class File(models.Model):
         ("Podcast", "Podcast"),
         ("Song", "Song"),
         ("News", "News"),
+        ("Course Books", "Course Books"),
         ("Periodicals", "Periodicals"),
         ("Story Book", "Story Book"),)
 
