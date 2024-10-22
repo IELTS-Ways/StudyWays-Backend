@@ -124,7 +124,9 @@ class InstituteStudentItem(APIView):
         try:
             institute = InstituteProfile.objects.get(user=self.request.user)
             student = StudentProfile.objects.get(id=self.kwargs["id"],institute=institute)
+            base_user = student.user
             student.delete()
+            base_user.delete()
             return Response("Student deleted.", status=status.HTTP_200_OK)
         except:
             return Response("Student not found or something went wrong, try again.", status=status.HTTP_400_BAD_REQUEST)
