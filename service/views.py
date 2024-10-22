@@ -16,7 +16,6 @@ from django.http import JsonResponse
 from openai import OpenAI
 
 
-
 class FeedbackView(APIView):
     permission_classes = [IsStudent]
     serializer_class = FeedbackSerializer
