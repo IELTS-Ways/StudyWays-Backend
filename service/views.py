@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
 from accounts.models import InstituteProfile, StudentProfile
 from accounts.serializers import StudentProfileSerializer
+from file.serializers import FileSerializer
 import difflib
 from difflib import SequenceMatcher, unified_diff, get_close_matches, HtmlDiff, ndiff
 import re
@@ -274,6 +275,7 @@ class ServicesCorrection(APIView):
             punctuation_result = compare_punctuation(service.text, service.file.script)
 
             correction_data = {"file_user": StudentProfileSerializer(service.user).data,
+                               "file_data": FileSerializer(service.file).data,
                                "file_script": service.file.script,
                                "student_text":service_text,
                                "differences":differences,
