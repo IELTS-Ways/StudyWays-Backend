@@ -259,7 +259,8 @@ class ServicesCorrection(APIView):
                     elif tag == 'replace' or tag == 'delete':
                         for i in range(i1, i2):
                             if original_text[i] in punctuation_marks:
-                                highlighted_text += f'<span style="color:#dc0202e6;"> <b> {original_text[i]} </b> </span>'
+                                #highlighted_text += f'<span style="color:#dc0202e6;"> <b> {original_text[i]} </b> </span>'
+                                highlighted_text += f'<mark style="background-color: #dc0202e6;"> <b> {original_text[i]} </b> </mark>'
                         for j in range(j1, j2):
                             if user_text[j] in punctuation_marks:
                                 highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
