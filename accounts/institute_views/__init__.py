@@ -1,3 +1,3 @@
 from accounts.institute_views.overview import InstituteOverview
-from accounts.institute_views.institute import Institute,ZarinpalMerchantID,InstituteFull
+from accounts.institute_views.institute import Institute,ZarinpalMerchantID, InstituteFull, InstitutePricing
 from accounts.institute_views.institute_student import InstituteStudent, InstituteStudentMultiple, InstituteStudentItem

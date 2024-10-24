@@ -30,8 +30,8 @@ class InstituteProfile(models.Model):
     ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
     primary_color = models.CharField(max_length=100, blank=True, null=True)
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
-    memory_mirror_price = models.IntegerField(blank=True, null=True)
-    audio_scripter_price = models.IntegerField(blank=True, null=True)
+    memory_mirror_price_each_day = models.IntegerField(blank=True, null=True)
+    audio_scripter_price_each_day = models.IntegerField(blank=True, null=True)
     wallet = models.IntegerField(default=0)
 
     def __str__(self):

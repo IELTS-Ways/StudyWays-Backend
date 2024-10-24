@@ -2,7 +2,7 @@ from django.urls import path
 from accounts.views import Logout,Profile,Refresh,RefreshAccess,OverView,SendOTP,VerifyOTP,UserValidationView
 from accounts.student_views import StudentLogin,StudentOverview,StudentInstituteData
 from accounts.institute_views import InstituteOverview,Institute,InstituteStudent,ZarinpalMerchantID,InstituteFull,\
-    InstituteStudentMultiple,InstituteStudentItem
+    InstituteStudentMultiple,InstituteStudentItem,InstitutePricing
 from accounts.freelance_views import FreelanceOverview,Freelance,FreelanceStudent,FreelanceFull,FreelanceStudentMultiple,\
     FreelanceStudentItem
 from accounts.management_panel_view import InstituteLists,StudentLists,FreelanceLists
@@ -32,6 +32,7 @@ urlpatterns = [
     path("institute-student-item/<int:id>", InstituteStudentItem.as_view(), name="institute-student-item"),
     path("institute-student-multiple", InstituteStudentMultiple.as_view(), name="institute-student-multiple"),
     path("zp-id", ZarinpalMerchantID.as_view(), name="zp-id"),
+    path("institute-pricing", InstitutePricing.as_view(), name="institute-pricing"),
     #
     path("freelance-overview", FreelanceOverview.as_view(), name="institute-overview"),
     path("freelance", Freelance.as_view(), name="institute"),
