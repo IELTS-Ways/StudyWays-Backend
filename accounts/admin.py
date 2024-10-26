@@ -4,7 +4,7 @@ from import_export.admin import ImportExportModelAdmin
 
 
 class UserAdmin(ImportExportModelAdmin):
-    list_display = ('phone_number', 'created_at')
+    list_display = ('phone_number','user_type','email','id','is_profile_fill', 'created_at')
 admin.site.register(User, UserAdmin)
 
 class StudentProfileAdmin(ImportExportModelAdmin):

@@ -16,7 +16,8 @@ class StudentProfile(models.Model):
         ("B1", "B1"),
         ("B2", "B2"),
         ("C1", "C1"),
-        ("C2", "C2"),)
+        ("C2", "C2"),
+        ("IELTS", "IELTS"),)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_IELTS_student = models.BooleanField(default=False)
