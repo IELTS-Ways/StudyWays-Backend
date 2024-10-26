@@ -18,6 +18,7 @@ class FreelanceProfile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     provinces = models.CharField(max_length=100, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
+    postal_code = models.CharField(max_length=100, blank=True, null=True)
     occupancy_type = models.CharField(max_length=100, default="Office", choices=address_type_choices)
     logo = models.ImageField(upload_to="institute_logo", blank=True, null=True)
     cover = models.ImageField(upload_to="institute_cover", blank=True, null=True)
@@ -27,15 +28,25 @@ class FreelanceProfile(models.Model):
     ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
     primary_color = models.CharField(max_length=100, blank=True, null=True)
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
-    memory_mirror_price = models.IntegerField(blank=True, null=True)
-    audio_scripter_price = models.IntegerField(blank=True, null=True)
-    wallet = models.IntegerField(default=0)
+    #memory_mirror_price = models.IntegerField(blank=True, null=True)
+    #audio_scripter_price = models.IntegerField(blank=True, null=True)
+    #wallet = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.phone_number
 
 
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created and instance.user_type == "freelance":
         FreelanceProfile.objects.create(user=instance)
+
+
+
+
+class FreelanceWallet(models.Model):
+    user = models.OneToOneField(FreelanceProfile, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=15, decimal_places=1, default=0)
+    updated_at = models.DateField(auto_now=True)
+    def __str__(self):
+        return str(self.user) + ' | '+ str(self.balance)

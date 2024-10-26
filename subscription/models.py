@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import StudentProfile, User
+from accounts.models import StudentProfile, User, FreelanceProfile, InstituteProfile
 import datetime
 
 
@@ -17,6 +17,8 @@ class Subscription(models.Model):
     created_at = models.DateField(auto_now_add=True)
     paid = models.BooleanField(default=False)
     description = models.CharField(max_length=256, null=True, blank=True)
+    freelance = models.ForeignKey(FreelanceProfile, on_delete=models.CASCADE, null=True, blank=True)
+    institute = models.ForeignKey(InstituteProfile, on_delete=models.CASCADE, null=True, blank=True)
     ref_id = models.CharField(max_length=256, null=True, blank=True)
     authority = models.CharField(max_length=256, null=True, blank=True)
 

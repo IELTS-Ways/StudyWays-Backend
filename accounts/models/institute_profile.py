@@ -15,6 +15,11 @@ class InstituteProfile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     provinces = models.CharField(max_length=100, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
+    postal_code = models.CharField(max_length=100, blank=True, null=True)
+    supervisor_phone1 = models.CharField(max_length=100, blank=True, null=True)
+    supervisor_phone2 = models.CharField(max_length=100, blank=True, null=True)
+    administrative_officer_phone1 = models.CharField(max_length=100, blank=True, null=True)
+    administrative_officer_phone2 = models.CharField(max_length=100, blank=True, null=True)
     occupancy_type = models.CharField(max_length=100, default="Landlord", choices=address_type_choices)
     school_address = models.CharField(max_length=256, blank=True, null=True)
     logo = models.ImageField(upload_to="institute_logo",blank=True,null=True)
@@ -25,15 +30,15 @@ class InstituteProfile(models.Model):
     ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
     primary_color = models.CharField(max_length=100, blank=True, null=True)
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
-    memory_mirror_price = models.IntegerField(blank=True, null=True)
-    audio_scripter_price = models.IntegerField(blank=True, null=True)
-    wallet = models.IntegerField(default=0)
+    memory_mirror_price_each_day = models.IntegerField(blank=True, null=True)
+    audio_scripter_price_each_day = models.IntegerField(blank=True, null=True)
+    #wallet = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.phone_number
 
 
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created and instance.user_type == "institute":
         InstituteProfile.objects.create(user=instance)

@@ -5,6 +5,7 @@ from accounts.serializers import UserSerializer, InstituteSerializer, UserUpdate
 from accounts.models import User,InstituteProfile
 from accounts.views.permissions.is_institute import IsInstitute
 from accounts.models.institute_profile import InstituteProfile
+from django.http import JsonResponse
 
 
 
@@ -79,3 +80,17 @@ class ZarinpalMerchantID(APIView):
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
+
+class InstitutePricing(APIView):
+    serializer_class = InstituteSerializer
+    permission_classes = [IsInstitute]
+
+    def post(self, *args, **kwargs):
+        try:
+            institute = InstituteProfile.objects.get(user=self.request.user)
+            institute.audio_scripter_price_each_day = self.request.data['audio_scripter_price_each_day']
+            institute.memory_mirror_price_each_day = self.request.data['memory_mirror_price_each_day']
+            institute.save()
+            return Response("Institute pricing updated.", status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

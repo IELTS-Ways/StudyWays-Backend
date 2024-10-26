@@ -6,6 +6,8 @@ from service.models import Service, MultipleSpellings, HyphenatedAdjectives
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
 from accounts.models import InstituteProfile, StudentProfile
+from accounts.serializers import StudentProfileSerializer
+from file.serializers import FileSerializer
 import difflib
 from difflib import SequenceMatcher, unified_diff, get_close_matches, HtmlDiff, ndiff
 import re
@@ -14,7 +16,6 @@ import string
 from termcolor import colored
 from django.http import JsonResponse
 from openai import OpenAI
-
 
 
 class FeedbackView(APIView):
@@ -252,27 +253,37 @@ class ServicesCorrection(APIView):
                 for tag, i1, i2, j1, j2 in matcher.get_opcodes():
                     if tag == 'equal':
                         for char in user_text[j1:j2]:
-                            if char in punctuation_marks:
+                            if char.isupper():
+                                highlighted_text += f'<span style="color:orange;">{char}</span>'
+                            elif char in punctuation_marks:
                                 highlighted_text += f'<span style="color:blue;">{char}</span>'
                             else:
                                 highlighted_text += char
                     elif tag == 'replace' or tag == 'delete':
                         for i in range(i1, i2):
-                            if original_text[i] in punctuation_marks:
-                                highlighted_text += f'<span style="color:#dc0202e6;"> <b> {original_text[i]} </b> </span>'
+                            if original_text[i].isupper():
+                                highlighted_text += f'<mark style="background-color:#f54c5a;">{original_text[i]}</mark>'
+                            elif original_text[i] in punctuation_marks:
+                                highlighted_text += f'<mark style="background-color:#f54c5a;">{original_text[i]}</mark>'
                         for j in range(j1, j2):
-                            if user_text[j] in punctuation_marks:
+                            if user_text[j].isupper():
+                                highlighted_text += f'<span style="color:orange;">{user_text[j]}</span>'
+                            elif user_text[j] in punctuation_marks:
                                 highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
                     elif tag == 'insert':
                         for j in range(j1, j2):
-                            if user_text[j] in punctuation_marks:
+                            if user_text[j].isupper():
+                                highlighted_text += f'<span style="color:orange;">{user_text[j]}</span>'
+                            elif user_text[j] in punctuation_marks:
                                 highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
 
                 return highlighted_text
 
             punctuation_result = compare_punctuation(service.text, service.file.script)
 
-            correction_data = {"file_script":service.file.script,
+            correction_data = {"file_user": StudentProfileSerializer(service.user).data,
+                               "file_data": FileSerializer(service.file).data,
+                               "file_script": service.file.script,
                                "student_text":service_text,
                                "differences":differences,
                                "missing_words_final":missing_words_final,
@@ -287,4 +298,6 @@ class ServicesCorrection(APIView):
             return Response(data, status=status.HTTP_200_OK)
         except:
             return Response("service not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
+
+
 

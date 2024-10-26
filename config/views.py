@@ -16,8 +16,10 @@ from rest_framework.renderers import JSONRenderer
 from urllib.parse import urlencode
 
 
+
 def index(request):
     return render(request, 'index.html')
+
 
 
 
@@ -77,13 +79,16 @@ class GoogleRedirectURIView(APIView):
 
                         access, refresh = login(user)
 
+
                         data = {
                             "refresh_token": refresh,
                             "access_token": access,
                             "user_id": user.id,
                             "user_user_type": user.user_type,
                             "user_first_name": user.first_name,
-                            "user_last_name": user.last_name
+                            "user_last_name": user.last_name,
+                            "user_email": user.email,
+                            "is_profile_fill": user.is_profile_fill()
                         }
                         '''   
                         response = Response(
@@ -105,5 +110,6 @@ class GoogleRedirectURIView(APIView):
 
                         query_string = urlencode(data)
                         request.session['data'] = data
-                        redirect_url = "https://studyways.ir/check-user?" + query_string
+                        redirect_url = "https://app.studyways.ir/check-user?" + query_string
                         return redirect(redirect_url)
+

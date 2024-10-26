@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from blog.serializers import PostSerializer, PostDetailSerializer
+from blog.serializers import PostSerializer, PostDetailSerializer, CategorySerializer
 from blog.models import Post,Category
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from accounts.views.permissions import IsInstitute, IsFreelance
@@ -23,6 +23,20 @@ class CustomPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
+
+
+
+class PostCats(APIView):
+    serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
+    def get(self, *args, **kwargs):
+        try:
+            cats = Category.objects.all()
+            serializer = self.serializer_class(cats,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response("Category not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class PostList(GenericAPIView):

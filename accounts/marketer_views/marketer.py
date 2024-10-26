@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from accounts.serializers import UserSerializer, UserUpdateSerializer, MarketerPanelSerializer
-from accounts.models import User,MarketerPanel
+from accounts.serializers import UserSerializer, UserUpdateSerializer, MarketerPanelSerializer, MarketerWalletSerializer
+from accounts.models import User,MarketerPanel,MarketerWallet
 from accounts.views.permissions.is_marketer import IsMarketer
 
 
@@ -30,3 +30,16 @@ class MarketerFull(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
+
+class MarketerWalletView(APIView):
+    serializer_class = MarketerWalletSerializer
+    permission_classes = [IsMarketer]
+
+    def get(self, *args, **kwargs):
+        marketer = MarketerPanel.objects.get(user=self.request.user)
+        wallet,created = MarketerWallet.objects.get_or_create(user=marketer)
+        serializer = self.serializer_class(wallet)
+        return Response(serializer.data, status=status.HTTP_200_OK)
