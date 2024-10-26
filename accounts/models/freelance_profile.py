@@ -30,7 +30,7 @@ class FreelanceProfile(models.Model):
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
     #memory_mirror_price = models.IntegerField(blank=True, null=True)
     #audio_scripter_price = models.IntegerField(blank=True, null=True)
-    wallet = models.IntegerField(default=0)
+    #wallet = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.phone_number
@@ -40,3 +40,13 @@ class FreelanceProfile(models.Model):
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == "freelance":
         FreelanceProfile.objects.create(user=instance)
+
+
+
+
+class FreelanceWallet(models.Model):
+    user = models.OneToOneField(FreelanceProfile, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=15, decimal_places=1, default=0)
+    updated_at = models.DateField(auto_now=True)
+    def __str__(self):
+        return str(self.user) + ' | '+ str(self.balance)

@@ -16,7 +16,7 @@ class MarketerPanel(models.Model):
     postal_code = models.CharField(max_length=100, blank=True, null=True)
     occupancy_type = models.CharField(max_length=100, default="Personal Residence", choices=address_type_choices)
     description = models.TextField(max_length=4000, blank=True, null=True)
-    revenue = models.IntegerField(default=0, blank=True, null=True)
+    #revenue = models.IntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
         return str(self.user)
@@ -25,3 +25,13 @@ class MarketerPanel(models.Model):
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == "marketer":
         MarketerPanel.objects.create(user=instance)
+
+
+
+
+class MarketerWallet(models.Model):
+    user = models.OneToOneField(MarketerPanel, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=15, decimal_places=1, default=0)
+    updated_at = models.DateField(auto_now=True)
+    def __str__(self):
+        return str(self.user) + ' | '+ str(self.balance)
