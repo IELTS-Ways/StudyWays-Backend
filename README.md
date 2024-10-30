@@ -44,9 +44,11 @@ docker exec -it container_id python manage.py createsuperuser
 ```
 
 
+
 7. Build the image and spin up the two containers
 
 ```bash
 docker-compose up -d --build
 ```
+
 
