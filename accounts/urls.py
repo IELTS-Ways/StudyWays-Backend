@@ -1,6 +1,6 @@
 from django.urls import path
 from accounts.views import Logout,Profile,Refresh,RefreshAccess,OverView,SendOTP,VerifyOTP,UserValidationView
-from accounts.student_views import StudentLogin,StudentOverview,StudentInstituteData
+from accounts.student_views import StudentLogin,StudentOverview,StudentInstituteData,StudentFull
 from accounts.institute_views import InstituteOverview,Institute,InstituteStudent,ZarinpalMerchantID,InstituteFull,\
     InstituteStudentMultiple,InstituteStudentItem,InstitutePricing
 from accounts.freelance_views import FreelanceOverview,Freelance,FreelanceStudent,FreelanceFull,FreelanceStudentMultiple,\
@@ -24,6 +24,7 @@ urlpatterns = [
     path("student-login", StudentLogin.as_view(), name="student-login"),
     path("student-overview", StudentOverview.as_view(), name="student-overview"),
     path("student-institute-data", StudentInstituteData.as_view(), name="student-institute-data"),
+    path("student-full", StudentFull.as_view(), name="student-full"),
     #
     path("institute-overview", InstituteOverview.as_view(), name="institute-overview"),
     path("institute", Institute.as_view(), name="institute"),

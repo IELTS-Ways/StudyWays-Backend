@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from config import responses
 from accounts.functions import get_user_data, login
 from config.settings import ACCESS_TTL
-from accounts.serializers import UserSerializer,StudentProfileSerializer, InstituteSerializer
+from accounts.serializers import UserSerializer,StudentProfileSerializer, InstituteSerializer, UserUpdateSerializer
 from django.contrib.auth import authenticate
 from accounts.views.permissions import IsStudent
 from rest_framework.permissions import AllowAny
@@ -86,3 +86,29 @@ class StudentInstituteData(APIView):
         student = StudentProfile.objects.get(user=user)
         data = InstituteSerializer(student.institute).data
         return Response(data, status=status.HTTP_200_OK)
+
+
+
+
+
+class StudentFull(APIView):
+    serializer_class = StudentProfileSerializer
+    permission_classes = [IsStudent]
+
+    def get(self, *args, **kwargs):
+        student = StudentProfile.objects.get(user=self.request.user)
+        serializer = self.serializer_class(student)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, *args, **kwargs):
+        user = self.request.user
+        data = self.request.data
+        user_serializer = UserUpdateSerializer(user,data=data,partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()
+        student = StudentProfile.objects.get(user=user)
+        serializer = self.serializer_class(student,data=data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)

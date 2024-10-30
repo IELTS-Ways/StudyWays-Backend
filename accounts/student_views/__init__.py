@@ -1,1 +1,1 @@
-from accounts.student_views.login import StudentLogin,StudentOverview,StudentInstituteData
+from accounts.student_views.login import StudentLogin,StudentOverview,StudentInstituteData,StudentFull
