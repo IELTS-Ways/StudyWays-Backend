@@ -26,6 +26,7 @@ class StudentProfile(models.Model):
     gender = models.CharField(max_length=20, default="Male", choices=gender_type_choices)
     english_level = models.CharField(max_length=10, default="A1", choices=english_level_choices)
     description = models.TextField(max_length=4000, blank=True, null=True)
+    image = models.ImageField(upload_to="student_photo", blank=True, null=True)
 
     def __str__(self):
         return self.user.phone_number

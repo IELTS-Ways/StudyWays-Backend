@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate
 from accounts.views.permissions import IsStudent
 from rest_framework.permissions import AllowAny
 from accounts.models.student_profile import StudentProfile, InstituteProfile
-
+from subscription.models import Subscription
 
 class StudentLogin(APIView):
     permission_classes = [AllowAny]
@@ -57,9 +57,38 @@ class StudentOverview(APIView):
     def get(self, *args, **kwargs):
         user=self.request.user
         student = StudentProfile.objects.get(user=user)
+        subs = Subscription.objects.filter(user=student)
+        for sub in subs:
+            if sub.paid:
+                if sub.expired():
+                    sub.status = "Expired"
+                else:
+                    sub.status = "Active"
+            else:
+                sub.status = "Canceled"
+            sub.save()
+
+        active_subs = Subscription.objects.filter(user=student, status="Active")
+
+        audio_video_scripter = active_subs.filter(type="Audio-Video-Scripter").last()
+        if audio_video_scripter:
+            audio_video_scripter_remaining_days = audio_video_scripter.remaining_days()
+        else:
+            audio_video_scripter_remaining_days = 0
+
+        memory_mirror = active_subs.filter(type="Memory-Mirror").last()
+        if memory_mirror:
+            memory_mirror_remaining_days = memory_mirror.remaining_days()
+        else:
+            memory_mirror_remaining_days = 0
+
+        membership = {"Audio-Video-Scripter": audio_video_scripter_remaining_days,
+                      "Memory-Mirror": memory_mirror_remaining_days}
+
         data = {
             "user": self.serializer_class(user).data,
             "student": StudentProfileSerializer(student).data,
+            "membership": membership,
             "institute": InstituteSerializer(student.institute).data,
             "payments": None,
         }
@@ -91,6 +120,7 @@ class StudentInstituteData(APIView):
 
 
 
+
 class StudentFull(APIView):
     serializer_class = StudentProfileSerializer
     permission_classes = [IsStudent]
@@ -108,6 +138,14 @@ class StudentFull(APIView):
             user_serializer.save()
         student = StudentProfile.objects.get(user=user)
         serializer = self.serializer_class(student,data=data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    def post(self, *args, **kwargs):
+        student = StudentProfile.objects.get(user=self.request.user)
+        serializer = self.serializer_class(student, data=self.request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

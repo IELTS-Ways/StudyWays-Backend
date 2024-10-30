@@ -11,6 +11,7 @@ from django.conf import settings
 from django.db import transaction
 from config.responses import bad_request, SuccessResponse
 from django.http import HttpResponse
+from datetime import datetime
 
 
 class StudentSubs(APIView):
@@ -150,4 +151,42 @@ class SubPayVerify(APIView):
                 return SuccessResponse(data={'status': False, 'details': 'Subscription already paid' })
         return SuccessResponse(data=response.content)
 
+
+
+class Membership(APIView):
+    serializer_class = SubscriptionSerializer
+    permission_classes = [IsStudent]
+    def get(self, *args, **kwargs):
+        try:
+            student = StudentProfile.objects.get(user=self.request.user)
+            subs = Subscription.objects.filter(user=student)
+
+            for sub in subs:
+                if sub.paid:
+                    if sub.expired():
+                        sub.status = "Expired"
+                    else:
+                        sub.status = "Active"
+                else:
+                    sub.status = "Canceled"
+                sub.save()
+
+            active_subs = Subscription.objects.filter(user=student,status="Active")
+
+            audio_video_scripter = active_subs.filter(type="Audio-Video-Scripter").last()
+            if audio_video_scripter:
+                audio_video_scripter_remaining_days = audio_video_scripter.remaining_days()
+            else:
+                audio_video_scripter_remaining_days = 0
+
+            memory_mirror = active_subs.filter(type="Memory-Mirror").last()
+            if memory_mirror:
+                memory_mirror_remaining_days = memory_mirror.remaining_days()
+            else:
+                memory_mirror_remaining_days = 0
+
+            final_data = {"Audio-Video-Scripter":audio_video_scripter_remaining_days, "Memory-Mirror":memory_mirror_remaining_days}
+            return Response(final_data, status=status.HTTP_200_OK)
+        except:
+            return Response("Subscription not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
 
