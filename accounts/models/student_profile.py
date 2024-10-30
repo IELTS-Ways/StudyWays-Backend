@@ -28,6 +28,12 @@ class StudentProfile(models.Model):
     description = models.TextField(max_length=4000, blank=True, null=True)
     image = models.ImageField(upload_to="student_photo", blank=True, null=True)
 
+    def parent_type(self):
+        if self.institute:
+            return "Institute"
+        else:
+            return "Freelance"
+
     def __str__(self):
         return self.user.phone_number
 

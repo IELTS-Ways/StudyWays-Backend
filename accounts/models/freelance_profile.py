@@ -25,7 +25,7 @@ class FreelanceProfile(models.Model):
     slogan = models.CharField(max_length=500, blank=True, null=True)
     economic_code = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(max_length=6000, blank=True, null=True)
-    ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
+    #ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
     primary_color = models.CharField(max_length=100, blank=True, null=True)
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
     #memory_mirror_price = models.IntegerField(blank=True, null=True)

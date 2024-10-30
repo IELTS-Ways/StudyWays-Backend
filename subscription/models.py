@@ -2,6 +2,18 @@ from django.db import models
 from accounts.models import StudentProfile, User, FreelanceProfile, InstituteProfile
 import datetime
 from datetime import datetime as date_time
+from django.core.exceptions import ValidationError
+
+
+class SingletonModel(models.Model):
+    class Meta:
+        abstract = True
+    def save(self, *args, **kwargs):
+        if not self.pk and self.__class__.objects.exists():
+            raise ValidationError('There can be only one instance of this model.')
+        return super(SingletonModel, self).save(*args, **kwargs)
+
+
 
 
 class Subscription(models.Model):
@@ -46,3 +58,15 @@ class Subscription(models.Model):
         return str(self.user) +'-'+ str(self.type)
 
 
+
+
+
+
+class DefaultPrice(SingletonModel):
+    ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
+    audio_video_scripter = models.IntegerField(blank=True, null=True)
+    memory_mirror = models.IntegerField(blank=True, null=True)
+    planner = models.IntegerField(blank=True, null=True)
+    fast_reading = models.IntegerField(blank=True, null=True)
+    def __str__(self):
+        return str(self.audio_video_scripter) +" | "+ str(self.memory_mirror)

@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
 from accounts.models import InstituteProfile, StudentProfile
 from subscription.serializers import SubscriptionSerializer
-from subscription.models import Subscription
+from subscription.models import Subscription, DefaultPrice
 import json
 import requests
 from django.conf import settings
@@ -62,15 +62,36 @@ class AddSubPay(APIView):
             serializer.save()
 
             sub = Subscription.objects.get(id=serializer.data['id'])
-            try:
-                price = student.institute.memory_mirror_price
-            except:
-                price = 230000
+
+            if student.parent_type() == "Institute":
+                ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
+                if sub.type == "Audio-Video-Scripter":
+                    price = student.institute.audio_scripter_price_each_day
+                elif sub.type == "Memory-Mirror":
+                    price = student.institute.memory_mirror_price_each_day
+                elif sub.type == "Planner":
+                    price = 0
+                elif sub.type == "Fast-reading":
+                    price = 0
+            else:
+                default_price = DefaultPrice.objects.all().last()
+                ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
+                if sub.type == "Audio-Video-Scripter":
+                    price = default_price.audio_video_scripter
+                elif sub.type == "Memory-Mirror":
+                    price = default_price.memory_mirror
+                elif sub.type == "Planner":
+                    price = default_price.planner
+                elif sub.type == "Fast-reading":
+                    price = default_price.fast_reading
+                else:
+                    price = 0
+
             sub.price = price
             sub.save()
 
             data = {
-                "MerchantID": student.institute.ZP_MERCHANT_ID,
+                "MerchantID": ZP_MERCHANT_ID,
                 "Amount": sub.price,
                 "Description": "خریداری اشتراک آنلاین استادی ویز",
                 "Authority": authority,
@@ -150,6 +171,7 @@ class SubPayVerify(APIView):
             else:
                 return SuccessResponse(data={'status': False, 'details': 'Subscription already paid' })
         return SuccessResponse(data=response.content)
+
 
 
 

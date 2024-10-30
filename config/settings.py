@@ -339,7 +339,7 @@ APPEND_SLASH = True
 # ZARRINPAL CONFIGURATION
 SANDBOX = True
 ZARRINPAL_URL="https://api.zarinpal.com/pg/"
-ZARRINPAL_MERCHANT_ID = "00000000-0000-0000-0000-000000000000"
+#ZARRINPAL_MERCHANT_ID = "00000000-0000-0000-0000-000000000000"
 ZP_API_REQUEST = "https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json"
 ZP_API_VERIFY = "https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentVerification.json"
 ZP_API_STARTPAY = "https://sandbox.zarinpal.com/pg/StartPay/"
