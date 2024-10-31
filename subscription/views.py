@@ -89,6 +89,8 @@ class AddSubPay(APIView):
 
                 if response.status_code == 200:
                     response = response.json()
+                    print('---------------')
+                    print(response)
                     if response['Status'] == 100:
                         sub.authority = response['Authority']
                         sub.save()
