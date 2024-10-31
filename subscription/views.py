@@ -10,8 +10,9 @@ import requests
 from django.conf import settings
 from django.db import transaction
 from config.responses import bad_request, SuccessResponse
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from datetime import datetime
+
 
 
 class StudentSubs(APIView):
@@ -65,53 +66,45 @@ class AddSubPay(APIView):
 
             if student.parent_type() == "Institute":
                 ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
-                if sub.type == "Audio-Video-Scripter":
-                    price = student.institute.audio_scripter_price_each_day
-                elif sub.type == "Memory-Mirror":
-                    price = student.institute.memory_mirror_price_each_day
-                elif sub.type == "Planner":
-                    price = 0
-                elif sub.type == "Fast-reading":
-                    price = 0
             else:
                 default_price = DefaultPrice.objects.all().last()
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
-                if sub.type == "Audio-Video-Scripter":
-                    price = default_price.audio_video_scripter
-                elif sub.type == "Memory-Mirror":
-                    price = default_price.memory_mirror
-                elif sub.type == "Planner":
-                    price = default_price.planner
-                elif sub.type == "Fast-reading":
-                    price = default_price.fast_reading
-                else:
-                    price = 0
-
-            sub.price = price
-            sub.save()
 
             data = {
                 "MerchantID": ZP_MERCHANT_ID,
                 "Amount": sub.price,
                 "Description": "خریداری اشتراک آنلاین استادی ویز",
                 "Authority": authority,
+                "Phone": student.user.phone_number,
                 "CallbackURL": settings.ZARIN_CALL_BACK + str(sub.id) + "/",
                 "OrderID": sub.id,
             }
+            print('------------------------------------')
+            print(data)
             data = json.dumps(data)
+
             headers = {'content-type': 'application/json', 'content-length': str(len(data))}
 
             try:
                 response = requests.post(settings.ZP_API_REQUEST, data=data, headers=headers, timeout=10)
+                response.raise_for_status()
+                print('-----------@@-')
+                print(response)
+                print(response.status_code)
 
                 if response.status_code == 200:
+                    print('11')
                     response = response.json()
+                    print(response)
                     if response['Status'] == 100:
+                        print('22')
                         sub.authority = response['Authority']
                         sub.save()
                         sub_serializer = SubscriptionSerializer(sub)
                         data = {'status': True, 'url': settings.ZP_API_STARTPAY + str(response['Authority']),
                                 'order': sub.id, 'authority': response['Authority']}
+                        print('--------')
+                        print(data)
                         return SuccessResponse(sub_serializer.data, data)
                     else:
                         return {'status': False, 'code': str(response['Status'])}
@@ -122,12 +115,7 @@ class AddSubPay(APIView):
             except requests.exceptions.ConnectionError:
                 return {'status': False, 'code': 'connection error'}
 
-
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
-
-
 
 
 

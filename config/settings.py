@@ -81,6 +81,7 @@ THIRD_PARTY_APPS = (
     "oauth2_provider",
     "social_django",
     "drf_social_oauth2",
+    "zeep",
 )
 
 # Apps specific for this project go here.
@@ -336,8 +337,10 @@ KAVENEGAR_TEMPLATE = "otp-verify"
 APPEND_SLASH = True
 
 
+
 # ZARRINPAL CONFIGURATION
 SANDBOX = True
+ZARINPAL_SIMULATION = True
 ZARRINPAL_URL="https://api.zarinpal.com/pg/"
 #ZARRINPAL_MERCHANT_ID = "00000000-0000-0000-0000-000000000000"
 ZP_API_REQUEST = "https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json"
