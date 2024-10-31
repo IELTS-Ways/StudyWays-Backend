@@ -79,8 +79,6 @@ class AddSubPay(APIView):
                 "CallbackURL": settings.ZARIN_CALL_BACK + str(sub.id) + "/",
                 "OrderID": sub.id,
             }
-            print('------------------------------------')
-            print(data)
             data = json.dumps(data)
 
             headers = {'content-type': 'application/json', 'content-length': str(len(data))}
@@ -88,23 +86,15 @@ class AddSubPay(APIView):
             try:
                 response = requests.post(settings.ZP_API_REQUEST, data=data, headers=headers, timeout=10)
                 response.raise_for_status()
-                print('-----------@@-')
-                print(response)
-                print(response.status_code)
 
                 if response.status_code == 200:
-                    print('11')
                     response = response.json()
-                    print(response)
                     if response['Status'] == 100:
-                        print('22')
                         sub.authority = response['Authority']
                         sub.save()
                         sub_serializer = SubscriptionSerializer(sub)
                         data = {'status': True, 'url': settings.ZP_API_STARTPAY + str(response['Authority']),
                                 'order': sub.id, 'authority': response['Authority']}
-                        print('--------')
-                        print(data)
                         return SuccessResponse(sub_serializer.data, data)
                     else:
                         return {'status': False, 'code': str(response['Status'])}
