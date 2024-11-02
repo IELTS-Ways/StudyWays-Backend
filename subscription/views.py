@@ -9,7 +9,7 @@ import json
 import requests
 from django.conf import settings
 from django.db import transaction
-from config.responses import bad_request, SuccessResponse
+from config.responses import bad_request, SuccessResponse, UnsuccessfulResponse
 from django.http import HttpResponse,JsonResponse
 from datetime import datetime
 
@@ -63,21 +63,28 @@ class AddSubPay(APIView):
             serializer.save()
 
             sub = Subscription.objects.get(id=serializer.data['id'])
+            default_price = DefaultPrice.objects.all().last()
 
             if student.parent_type() == "Institute":
                 ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
+                apportionment = sub.price * default_price.apportionment_percentage
             else:
-                default_price = DefaultPrice.objects.all().last()
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
+                apportionment = 0
 
             data = {
                 "MerchantID": ZP_MERCHANT_ID,
-                "Amount": sub.price,
+                "Amount": str(sub.price),
                 "Description": "خریداری اشتراک آنلاین استادی ویز",
                 "Authority": authority,
                 "Phone": student.user.phone_number,
                 "CallbackURL": settings.ZARIN_CALL_BACK + str(sub.id) + "/",
                 "OrderID": sub.id,
+                "wages": [{
+                    "iban": default_price.shaba_number,
+                    "amount": str(apportionment),
+                    "description": "تسهیم سود فروش از سرویس"
+                }],
             }
             data = json.dumps(data)
 
@@ -99,7 +106,8 @@ class AddSubPay(APIView):
                                 'order': sub.id, 'authority': response['Authority']}
                         return SuccessResponse(sub_serializer.data, data)
                     else:
-                        return {'status': False, 'code': str(response['Status'])}
+                        return Response(response['errors'], status=400)
+                        #return {'status': False, 'code': str(response['Status'])}
                 return response
 
             except requests.exceptions.Timeout:
@@ -118,8 +126,8 @@ class SubPayVerify(APIView):
     def get(self, *args, **kwargs):
         status = self.request.query_params.get("Status")
         authority = self.request.query_params.get("Authority")
-        id = kwargs.get("id")
-        student = StudentProfile.objects.get(user=self.request.user)
+        id = self.kwargs.get("id")
+        #student = StudentProfile.objects.get(user=self.request.user)
 
         if not authority or status != "OK":
             #return redirect('https://ioc.ieltsways.com/orders')
@@ -130,8 +138,14 @@ class SubPayVerify(APIView):
         except Subscription.DoesNotExist:
             return bad_request("Subscription does not exist...")
 
+        if sub.user.parent_type() == "Institute":
+            ZP_MERCHANT_ID = sub.user.institute.ZP_MERCHANT_ID
+        else:
+            default_price = DefaultPrice.objects.all().last()
+            ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
+
         data = {
-            "MerchantID": student.institute.ZP_MERCHANT_ID,
+            "MerchantID": ZP_MERCHANT_ID,
             "Amount": sub.price,
             "Authority": authority,
         }

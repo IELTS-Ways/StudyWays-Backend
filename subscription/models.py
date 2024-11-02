@@ -61,12 +61,13 @@ class Subscription(models.Model):
 
 
 
-
 class DefaultPrice(SingletonModel):
     ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
     audio_video_scripter = models.IntegerField(blank=True, null=True)
     memory_mirror = models.IntegerField(blank=True, null=True)
     planner = models.IntegerField(blank=True, null=True)
     fast_reading = models.IntegerField(blank=True, null=True)
+    apportionment_percentage = models.DecimalField(max_digits=30, decimal_places=1, blank=True, null=True)
+    shaba_number = models.CharField(max_length=256,blank=True,null=True)
     def __str__(self):
         return str(self.audio_video_scripter) +" | "+ str(self.memory_mirror)
