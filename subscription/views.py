@@ -12,6 +12,7 @@ from django.db import transaction
 from config.responses import bad_request, SuccessResponse, UnsuccessfulResponse
 from django.http import HttpResponse,JsonResponse
 from datetime import datetime
+from django.shortcuts import redirect
 
 
 
@@ -130,8 +131,8 @@ class SubPayVerify(APIView):
         #student = StudentProfile.objects.get(user=self.request.user)
 
         if not authority or status != "OK":
-            #return redirect('https://ioc.ieltsways.com/orders')
-            return HttpResponse("payment faild...", content_type='text/plain')
+            return redirect('https://app.studyways.ir/dashboard/student/callback?success=notok')
+            #return HttpResponse("payment faild...", content_type='text/plain')
 
         try:
             sub = Subscription.objects.get(id=id)
@@ -160,8 +161,8 @@ class SubPayVerify(APIView):
                 sub.authority = authority
                 sub.ref_id = response['RefID']
                 sub.save()
-                #return redirect('https://ioc.ieltsways.com/orders?RefID={}'.format(response['RefID']))
-                return HttpResponse("payment done, RefID={}".format(response['RefID']), content_type='text/plain')
+                return redirect(f'https://app.studyways.ir/dashboard/student/callback?success=ok&payment_id={response["RefID"]}')
+                #return HttpResponse("payment done, RefID={}".format(response['RefID']), content_type='text/plain')
             else:
                 return SuccessResponse(data={'status': False, 'details': 'Subscription already paid' })
         return SuccessResponse(data=response.content)
