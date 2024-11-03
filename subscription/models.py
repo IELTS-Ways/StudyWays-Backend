@@ -52,6 +52,9 @@ class Subscription(models.Model):
         today = date_time.now().date()
         elapsed_days = (today - self.created_at).days
         remaining_days = self.day_period - elapsed_days
+        if remaining_days <= 0:
+            self.status = "Expired"
+            self.save()
         return remaining_days
 
     def __str__(self):
