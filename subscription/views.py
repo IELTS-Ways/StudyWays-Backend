@@ -67,9 +67,13 @@ class AddSubPay(APIView):
             default_price = DefaultPrice.objects.all().last()
 
             if student.parent_type() == "Institute":
+                sub.institute = student.institute
+                sub.save()
                 ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
                 apportionment = sub.price * default_price.apportionment_percentage
             else:
+                sub.freelance = student.freelance
+                sub.save()
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
                 apportionment = 0
 
