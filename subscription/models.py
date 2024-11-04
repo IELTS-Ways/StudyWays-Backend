@@ -3,7 +3,7 @@ from accounts.models import StudentProfile, User, FreelanceProfile, InstitutePro
 import datetime
 from datetime import datetime as date_time
 from django.core.exceptions import ValidationError
-from django.db.models import F, ExpressionWrapper, fields
+from django.db.models import F, ExpressionWrapper, fields, DurationField
 
 class SingletonModel(models.Model):
     class Meta:
@@ -17,12 +17,12 @@ class SingletonModel(models.Model):
 
 class SubscriptionManager(models.Manager):
     def with_remaining_days(self):
-        return self.annotate(
-            remaining_days=ExpressionWrapper(F('day_period') - (date_time.now().date() - F('created_at')).days,
-                output_field=fields.IntegerField()
-            )
+        today = datetime.now().date()
+        remaining_expr = ExpressionWrapper(
+            F('day_period') - (today - F('created_at')).days,
+            output_field=fields.IntegerField()
         )
-
+        return self.get_queryset().annotate(remaining_days=remaining_expr)
 
 
 
