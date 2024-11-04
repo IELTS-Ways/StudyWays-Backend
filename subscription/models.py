@@ -17,7 +17,7 @@ class SingletonModel(models.Model):
 
 class SubscriptionManager(models.Manager):
     def with_remaining_days(self):
-        today = datetime.now().date()
+        today = date_time.now().date()
         remaining_expr = ExpressionWrapper(
             F('day_period') - (today - F('created_at')).days,
             output_field=fields.IntegerField()
