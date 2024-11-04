@@ -3,7 +3,7 @@ from accounts.models import StudentProfile, User, FreelanceProfile, InstitutePro
 import datetime
 from datetime import datetime as date_time
 from django.core.exceptions import ValidationError
-
+from django.db.models import F, ExpressionWrapper, fields
 
 class SingletonModel(models.Model):
     class Meta:
@@ -12,6 +12,16 @@ class SingletonModel(models.Model):
         if not self.pk and self.__class__.objects.exists():
             raise ValidationError('There can be only one instance of this model.')
         return super(SingletonModel, self).save(*args, **kwargs)
+
+
+
+class SubscriptionManager(models.Manager):
+    def with_remaining_days(self):
+        return self.annotate(
+            remaining_days=ExpressionWrapper(F('day_period') - (date_time.now().date() - F('created_at')).days,
+                output_field=fields.IntegerField()
+            )
+        )
 
 
 
@@ -40,6 +50,8 @@ class Subscription(models.Model):
     institute = models.ForeignKey(InstituteProfile, on_delete=models.CASCADE, null=True, blank=True)
     ref_id = models.CharField(max_length=256, null=True, blank=True)
     authority = models.CharField(max_length=256, null=True, blank=True)
+
+    objects = SubscriptionManager()
 
     def expired(self):
         delta = datetime.date.today() - self.created_at

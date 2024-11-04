@@ -194,13 +194,13 @@ class Membership(APIView):
 
             active_subs = Subscription.objects.filter(user=student,status="Active")
 
-            audio_video_scripter = active_subs.filter(type="Audio-Video-Scripter").order_by('-remaining_days')[:1]
+            audio_video_scripter = active_subs.with_remaining_days().filter(type="Audio-Video-Scripter").order_by('-remaining_days')[:1]
             if audio_video_scripter:
                 audio_video_scripter_remaining_days = audio_video_scripter.remaining_days()
             else:
                 audio_video_scripter_remaining_days = 0
 
-            memory_mirror = active_subs.filter(type="Memory-Mirror").order_by('-remaining_days')[:1]
+            memory_mirror = active_subs.with_remaining_days().filter(type="Memory-Mirror").order_by('-remaining_days')[:1]
             if memory_mirror:
                 memory_mirror_remaining_days = memory_mirror.remaining_days()
             else:
