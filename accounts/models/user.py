@@ -42,7 +42,7 @@ class User(AbstractUser):
     majors_name = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
-    invite_code = models.CharField(max_length=100,blank=True, null=True)
+    invite_code = models.IntegerField(blank=True, null=True)
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "phone_number"
