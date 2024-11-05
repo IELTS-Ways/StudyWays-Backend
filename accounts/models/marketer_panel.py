@@ -16,6 +16,8 @@ class MarketerPanel(models.Model):
     postal_code = models.CharField(max_length=100, blank=True, null=True)
     occupancy_type = models.CharField(max_length=100, default="Personal Residence", choices=address_type_choices)
     description = models.TextField(max_length=4000, blank=True, null=True)
+    cart_number = models.IntegerField(null=True, blank=True)
+    shaba = models.CharField(max_length=100, null=True, blank=True)
     #revenue = models.IntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
