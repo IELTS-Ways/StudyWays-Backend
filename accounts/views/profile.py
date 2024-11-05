@@ -23,9 +23,17 @@ class Profile(APIView):
         serializer = self.serializer_class(self.request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def patch(self, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         data = self.request.data
         profile = User.objects.get(id=self.request.user.id)
+        # user_id = request.data.get("user_id")
+        invite_code = request.data.get("invite_code")
+
+        user = User.objects.filter(id=invite_code).first()
+        
+        if not user:
+            return Response({"detail": "Invite code not found."}, status=status.HTTP_404_NOT_FOUND)
+        
         serializer = UserUpdateSerializer(profile, data=data)
         if serializer.is_valid():
             serializer.save()
