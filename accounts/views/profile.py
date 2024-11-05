@@ -23,7 +23,7 @@ class Profile(APIView):
         serializer = self.serializer_class(self.request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self, *args, **kwargs):
         data = self.request.data
         profile = User.objects.get(id=self.request.user.id)
         serializer = UserUpdateSerializer(profile, data=data)
