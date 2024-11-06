@@ -33,7 +33,7 @@ class Subscription(models.Model):
     status = models.CharField(max_length=40, default="Active", choices=status_choices)
     user = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     day_period = models.IntegerField(default=0)
-    price = models.IntegerField(default=230000)
+    price = models.IntegerField(default=0)
     created_at = models.DateField(auto_now_add=True)
     paid = models.BooleanField(default=False)
     description = models.CharField(max_length=256, null=True, blank=True)
@@ -41,6 +41,11 @@ class Subscription(models.Model):
     institute = models.ForeignKey(InstituteProfile, on_delete=models.CASCADE, null=True, blank=True)
     ref_id = models.CharField(max_length=256, null=True, blank=True)
     authority = models.CharField(max_length=256, null=True, blank=True)
+    inviter_sales_percentage = models.IntegerField(null=True, blank=True)
+    inviter_price = models.IntegerField(null=True, blank=True)
+    apportionment_percentage = models.IntegerField(null=True, blank=True)
+    freelance_price = models.IntegerField(null=True, blank=True)
+    institute_price = models.IntegerField(null=True, blank=True)
 
     def expired(self):
         delta = datetime.date.today() - self.created_at
@@ -72,6 +77,7 @@ class DefaultPrice(SingletonModel):
     planner = models.IntegerField(blank=True, null=True)
     fast_reading = models.IntegerField(blank=True, null=True)
     apportionment_percentage = models.DecimalField(max_digits=30, decimal_places=1, blank=True, null=True)
+    freelance_apportionment_percentage = models.DecimalField(max_digits=30, decimal_places=1, blank=True, null=True)
     shaba_number = models.CharField(max_length=256,blank=True,null=True)
     def __str__(self):
         return str(self.audio_video_scripter) +" | "+ str(self.memory_mirror)

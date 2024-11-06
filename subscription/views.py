@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
-from accounts.models import InstituteProfile, StudentProfile
+from accounts.models import InstituteProfile, StudentProfile, User
 from subscription.serializers import SubscriptionSerializer
 from subscription.models import Subscription, DefaultPrice
 import json
@@ -63,6 +63,15 @@ class AddSubPay(APIView):
         if serializer.is_valid():
             serializer.save()
 
+            if User.objects.filter(id=self.request.user.invite_code).exists():
+                inviter = User.objects.get(id=self.request.user.invite_code)
+                if inviter.user_type == "student":
+                    sales_percentage = 10
+                else:
+                    sales_percentage = 8
+            else:
+                sales_percentage = 0
+
             sub = Subscription.objects.get(id=serializer.data['id'])
             default_price = DefaultPrice.objects.all().last()
 
@@ -70,12 +79,28 @@ class AddSubPay(APIView):
                 sub.institute = student.institute
                 sub.save()
                 ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
-                apportionment = sub.price * default_price.apportionment_percentage
+                appor_percent = default_price.apportionment_percentage
+                apportionment = sub.price * appor_percent
+                inviter_price = apportionment * sales_percentage      #share with inviter
+                studyways_price = apportionment - inviter_price       #send to us
+                institute_price = sub.price - apportionment           #send to institute
+                sub.institute_price = institute_price
+
             else:
                 sub.freelance = student.freelance
-                sub.save()
+                sub.save()                                           #send to us
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
-                apportionment = 0
+                appor_percent = default_price.freelance_apportionment_percentage
+                apportionment = sub.price * appor_percent
+                freelance_price = sub.price - apportionment          #share with freelance
+                sub.freelance_price = freelance_price
+                inviter_price = apportionment * sales_percentage     #share with inviter
+
+            sub.inviter_sales_percentage = sales_percentage
+            sub.inviter_price = inviter_price
+            sub.apportionment_percentage = appor_percent
+            sub.save()
+
 
             data = {
                 "MerchantID": ZP_MERCHANT_ID,
@@ -87,7 +112,7 @@ class AddSubPay(APIView):
                 "OrderID": sub.id,
                 "wages": [{
                     "iban": default_price.shaba_number,
-                    "amount": str(apportionment),
+                    "amount": str(studyways_price),
                     "description": "تسهیم سود فروش از سرویس"
                 }],
             }
