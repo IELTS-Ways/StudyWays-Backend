@@ -2,7 +2,6 @@
 
 ### StudyWays API Services
 
-
 [![](https://img.shields.io/badge/python-3.10-orange)](https://www.python.org/)
 [![](https://img.shields.io/badge/Django-4.1-green)](https://www.djangoproject.com/)
 
@@ -42,7 +41,6 @@ docker-compose exec web python manage.py migrate
 docker exec -it container_id python manage.py createsuperuser
 
 ```
-
 
 
 7. Build the image and spin up the two containers
