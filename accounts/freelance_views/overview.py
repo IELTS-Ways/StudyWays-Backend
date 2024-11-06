@@ -18,7 +18,5 @@ class FreelanceOverview(APIView):
             "freelance": FreelanceProfileSerializer(freelance).data,
             "students": None,
             "payments": None,
-            "cart_number" : None,
-            "shaba" : None,
         }
         return Response(data, status=status.HTTP_200_OK)
