@@ -66,9 +66,9 @@ class AddSubPay(APIView):
             if User.objects.filter(id=self.request.user.invite_code).exists():
                 inviter = User.objects.get(id=self.request.user.invite_code)
                 if inviter.user_type == "student":
-                    sales_percentage = 10
+                    sales_percentage = 0.10
                 else:
-                    sales_percentage = 8
+                    sales_percentage = 0.08
             else:
                 sales_percentage = 0
 
