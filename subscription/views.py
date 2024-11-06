@@ -89,6 +89,7 @@ class AddSubPay(APIView):
             else:
                 sub.freelance = student.freelance
                 sub.save()                                           #send to us
+                studyways_price = 0
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
                 appor_percent = default_price.freelance_apportionment_percentage
                 apportionment = sub.price * appor_percent
