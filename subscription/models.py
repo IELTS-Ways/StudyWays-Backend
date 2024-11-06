@@ -4,7 +4,6 @@ import datetime
 from datetime import datetime as date_time
 from django.core.exceptions import ValidationError
 
-
 class SingletonModel(models.Model):
     class Meta:
         abstract = True
@@ -12,7 +11,6 @@ class SingletonModel(models.Model):
         if not self.pk and self.__class__.objects.exists():
             raise ValidationError('There can be only one instance of this model.')
         return super(SingletonModel, self).save(*args, **kwargs)
-
 
 
 
@@ -65,8 +63,6 @@ class Subscription(models.Model):
 
     def __str__(self):
         return str(self.user) +'-'+ str(self.type)
-
-
 
 
 
