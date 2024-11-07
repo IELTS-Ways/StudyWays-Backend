@@ -62,15 +62,21 @@ class User(AbstractUser):
             return False
 
 
-
 @receiver(post_save, sender=User)
-def create_user_profiles(sender, instance, created, **kwargs):
-    if created:
-        if instance.user_type == "student":
-            user_models.StudentProfile.objects.get_or_create(user=instance)
-        elif instance.user_type == "institute":
-            user_models.InstituteProfile.objects.get_or_create(user=instance)
-        elif instance.user_type == "freelance":
-            user_models.FreelanceProfile.objects.get_or_create(user=instance)
-        elif instance.user_type == "marketer":
-            user_models.MarketerPanel.objects.get_or_create(user=instance)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if instance.user_type == "student":
+        user_models.StudentProfile.objects.get_or_create(user=instance)
+        if hasattr(instance, 'studentprofile'):
+            instance.studentprofile.save()
+    elif instance.user_type == "institute":
+        user_models.InstituteProfile.objects.get_or_create(user=instance)
+        if hasattr(instance, 'instituteprofile'):
+            instance.instituteprofile.save()
+    elif instance.user_type == "freelance":
+        user_models.FreelanceProfile.objects.get_or_create(user=instance)
+        if hasattr(instance, 'freelanceprofile'):
+            instance.freelanceprofile.save()
+    elif instance.user_type == "marketer":
+        user_models.user_models.MarketerPanel.objects.get_or_create(user=instance)
+        if hasattr(instance, 'marketerprofile'):
+            instance.marketerprofile.save()
