@@ -4,12 +4,13 @@ from rest_framework.views import APIView
 from config import responses
 from accounts.functions import get_user_data, login
 from config.settings import ACCESS_TTL
-from accounts.serializers import UserSerializer,StudentProfileSerializer, InstituteSerializer, UserUpdateSerializer
+from accounts.serializers import UserSerializer,StudentProfileSerializer, InstituteSerializer, UserUpdateSerializer, FreelanceProfileSerializer
 from django.contrib.auth import authenticate
 from accounts.views.permissions import IsStudent
 from rest_framework.permissions import AllowAny
 from accounts.models.student_profile import StudentProfile, InstituteProfile
-from subscription.models import Subscription
+from subscription.models import Subscription, DefaultPrice
+
 
 class StudentLogin(APIView):
     permission_classes = [AllowAny]
@@ -85,11 +86,23 @@ class StudentOverview(APIView):
         membership = {"Audio-Video-Scripter": audio_video_scripter_remaining_days,
                       "Memory-Mirror": memory_mirror_remaining_days}
 
+        if student.parent_type() == "Institute":
+            memory_mirror_price = student.institute.memory_mirror_price_each_day
+            audio_scripter_price = student.institute.audio_scripter_price_each_day
+        else:
+            default_price = DefaultPrice.objects.all().last()
+            memory_mirror_price = default_price.memory_mirror
+            audio_scripter_price = default_price.audio_video_scripter
+
         data = {
             "user": self.serializer_class(user).data,
             "student": StudentProfileSerializer(student).data,
             "membership": membership,
             "institute": InstituteSerializer(student.institute).data,
+            "freelance": FreelanceProfileSerializer(student.freelance).data,
+            "parent_type": student.parent_type(),
+            "memory_mirror_price": memory_mirror_price,
+            "audio_scripter_price": audio_scripter_price,
             "payments": None,
         }
         return Response(data, status=status.HTTP_200_OK)
