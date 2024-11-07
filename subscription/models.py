@@ -39,11 +39,11 @@ class Subscription(models.Model):
     institute = models.ForeignKey(InstituteProfile, on_delete=models.CASCADE, null=True, blank=True)
     ref_id = models.CharField(max_length=256, null=True, blank=True)
     authority = models.CharField(max_length=256, null=True, blank=True)
-    inviter_sales_percentage = models.IntegerField(null=True, blank=True)
-    inviter_price = models.IntegerField(null=True, blank=True)
-    apportionment_percentage = models.IntegerField(null=True, blank=True)
-    freelance_price = models.IntegerField(null=True, blank=True)
-    institute_price = models.IntegerField(null=True, blank=True)
+    inviter_sales_percentage = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
+    inviter_price = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
+    apportionment_percentage = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
+    freelance_price = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
+    institute_price = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
 
     def expired(self):
         delta = datetime.date.today() - self.created_at

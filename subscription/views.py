@@ -13,6 +13,7 @@ from config.responses import bad_request, SuccessResponse, UnsuccessfulResponse
 from django.http import HttpResponse,JsonResponse
 from datetime import datetime
 from django.shortcuts import redirect
+import decimal
 
 
 
@@ -66,11 +67,14 @@ class AddSubPay(APIView):
             if User.objects.filter(id=self.request.user.invite_code).exists():
                 inviter = User.objects.get(id=self.request.user.invite_code)
                 if inviter.user_type == "student":
-                    sales_percentage = 0.10
+                    #sales_percentage = 0.10
+                    sales_percentage = decimal.Decimal('0.10')
                 else:
-                    sales_percentage = 0.08
+                    #sales_percentage = 0.08
+                    sales_percentage = decimal.Decimal('0.08')
             else:
                 sales_percentage = 0
+
 
             sub = Subscription.objects.get(id=serializer.data['id'])
             default_price = DefaultPrice.objects.all().last()
@@ -81,9 +85,9 @@ class AddSubPay(APIView):
                 ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
                 appor_percent = default_price.apportionment_percentage
                 apportionment = sub.price * appor_percent
-                inviter_price = apportionment * sales_percentage      #share with inviter
-                studyways_price = apportionment - inviter_price       #send to us
-                institute_price = sub.price - apportionment           #send to institute
+                inviter_price = float(apportionment) * sales_percentage      #share with inviter
+                studyways_price = float(apportionment) - inviter_price       #send to us
+                institute_price = sub.price - float(apportionment)           #send to institute
                 sub.institute_price = institute_price
 
             else:
@@ -93,7 +97,7 @@ class AddSubPay(APIView):
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
                 appor_percent = default_price.freelance_apportionment_percentage
                 apportionment = sub.price * appor_percent
-                freelance_price = sub.price - apportionment          #share with freelance
+                freelance_price = sub.price - float(apportionment)          #share with freelance
                 sub.freelance_price = freelance_price
                 inviter_price = apportionment * sales_percentage     #share with inviter
 
