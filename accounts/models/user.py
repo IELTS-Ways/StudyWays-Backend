@@ -3,6 +3,9 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from accounts.models.user_manager import UserManager
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from accounts import models as user_models
 
 
 class User(AbstractUser):
@@ -57,3 +60,17 @@ class User(AbstractUser):
             return True
         else:
             return False
+
+
+
+@receiver(post_save, sender=User)
+def create_user_profiles(sender, instance, created, **kwargs):
+    if created:
+        if instance.user_type == "student":
+            user_models.StudentProfile.objects.get_or_create(user=instance)
+        elif instance.user_type == "institute":
+            user_models.InstituteProfile.objects.get_or_create(user=instance)
+        elif instance.user_type == "freelance":
+            user_models.FreelanceProfile.objects.get_or_create(user=instance)
+        elif instance.user_type == "marketer":
+            user_models.MarketerPanel.objects.get_or_create(user=instance)
