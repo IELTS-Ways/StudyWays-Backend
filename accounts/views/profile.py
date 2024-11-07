@@ -30,21 +30,27 @@ class Profile(APIView):
         if serializer.is_valid():
             serializer.save()
             user = self.request.user
+            print('===================')
+            print(user)
             if user.user_type == "freelance":
                 FreelanceProfile.objects.get_or_create(user=user)
+                print('1')
             elif user.user_type == "institute":
                 InstituteProfile.objects.get_or_create(user=user)
+                print('2')
             elif user.user_type == "marketer":
                 MarketerPanel.objects.get_or_create(user=user)
+                print('3')
             elif user.user_type == "student":
+                print('4')
                 if data["parent"] == "freelance":
                     StudentProfile.objects.get_or_create( user=user, freelance=FreelanceProfile.objects.get(id=data["parent_id"]) )
                 elif data["parent"] == "institute":
                     StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=data["parent_id"]) )
                 elif data["parent"] == "not":
-                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=10) )
+                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=8) )
                 else:
-                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=10) )
+                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=8) )
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
