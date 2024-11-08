@@ -7,5 +7,3 @@ class InstituteSerializer(serializers.ModelSerializer):
         model = InstituteProfile
         fields = "__all__"
 
-
-

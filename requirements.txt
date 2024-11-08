@@ -30,3 +30,4 @@ openai==1.46.0
 psycopg2-binary==2.9.10
 zeep==3.4.0
 django-zarinpal==1.0.1
+pandas==2.2.3

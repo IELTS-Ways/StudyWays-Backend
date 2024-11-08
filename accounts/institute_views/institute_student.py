@@ -12,6 +12,7 @@ from subscription.serializers import SubscriptionSerializer
 from datetime import datetime
 import pandas as pd
 
+
 class InstituteStudent(APIView):
     serializer_class = UserSerializer
     permission_classes = [IsInstitute]
