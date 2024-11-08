@@ -10,12 +10,12 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
 class MultipleStudentProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentProfile
         fields = "__all__"
-        
         
 
 
