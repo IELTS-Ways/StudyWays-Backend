@@ -48,7 +48,6 @@ class AddSub(APIView):
 
 
 
-
 class AddSubPay(APIView):
     serializer_class = SubscriptionSerializer
     permission_classes = [IsStudent]
