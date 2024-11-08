@@ -39,13 +39,18 @@ class Profile(APIView):
                 MarketerPanel.objects.get_or_create(user=user)
             elif user.user_type == "student":
                 try:
+                    print('------------------------------')
                     student, created = StudentProfile.objects.get_or_create(user=user)
+                    print(student)
+                    print(created)
                     if data["parent"] == "freelance":
                         freelance_parent = FreelanceProfile.objects.get(id=data["parent_id"])
+                        print(freelance_parent)
                         student.freelance = freelance_parent
                         student.save()
                     elif data["parent"] == "institute":
                         institute_parent = InstituteProfile.objects.get(id=data["parent_id"])
+                        print(institute_parent)
                         student.institute = institute_parent
                         student.save()
                     else:
