@@ -96,8 +96,8 @@ class AddSubPay(APIView):
                 studyways_price = 0
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
                 appor_percent = default_price.freelance_apportionment_percentage
-                apportionment = sub.price * appor_percent
-                freelance_price = sub.price - float(apportionment)          #share with freelance
+                freelance_price = sub.price * appor_percent         #share with freelance
+                apportionment = sub.price - float(freelance_price)
                 sub.freelance_price = freelance_price
                 inviter_price = apportionment * sales_percentage     #share with inviter
 
