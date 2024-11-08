@@ -34,19 +34,18 @@ class Profile(APIView):
             print(user)
             if user.user_type == "freelance":
                 FreelanceProfile.objects.get_or_create(user=user)
-                print('1')
             elif user.user_type == "institute":
                 InstituteProfile.objects.get_or_create(user=user)
-                print('2')
             elif user.user_type == "marketer":
                 MarketerPanel.objects.get_or_create(user=user)
-                print('3')
             elif user.user_type == "student":
-                print('4')
+                print('----')
+                print(data["parent"])
+                print(data["parent_id"])
                 if data["parent"] == "freelance":
-                    StudentProfile.objects.get_or_create( user=user, freelance=FreelanceProfile.objects.get(id=data["parent_id"]) )
+                    StudentProfile.objects.get_or_create( user=user, freelance=FreelanceProfile.objects.get(id=int(data["parent_id"])) )
                 elif data["parent"] == "institute":
-                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=data["parent_id"]) )
+                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=int(data["parent_id"])) )
                 elif data["parent"] == "not":
                     StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=8) )
                 else:
