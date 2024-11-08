@@ -30,8 +30,7 @@ class Profile(APIView):
         if serializer.is_valid():
             serializer.save()
             user = self.request.user
-            print('===================')
-            print(user)
+
             if user.user_type == "freelance":
                 FreelanceProfile.objects.get_or_create(user=user)
             elif user.user_type == "institute":
@@ -39,17 +38,22 @@ class Profile(APIView):
             elif user.user_type == "marketer":
                 MarketerPanel.objects.get_or_create(user=user)
             elif user.user_type == "student":
-                print('----')
-                print(data["parent"])
-                print(data["parent_id"])
-                if data["parent"] == "freelance":
-                    StudentProfile.objects.get_or_create( user=user, freelance=FreelanceProfile.objects.get(id=int(data["parent_id"])) )
-                elif data["parent"] == "institute":
-                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=int(data["parent_id"])) )
-                elif data["parent"] == "not":
-                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=8) )
-                else:
-                    StudentProfile.objects.get_or_create( user=user, institute=InstituteProfile.objects.get(id=8) )
+                try:
+                    student, created = StudentProfile.objects.get_or_create(user=user)
+                    if data["parent"] == "freelance":
+                        freelance_parent = FreelanceProfile.objects.get(id=data["parent_id"])
+                        student.freelance = freelance_parent
+                        student.save()
+                    elif data["parent"] == "institute":
+                        institute_parent = InstituteProfile.objects.get(id=data["parent_id"])
+                        student.institute = institute_parent
+                        student.save()
+                    else:
+                        institute_parent = InstituteProfile.objects.get(id=8)
+                        student.institute = institute_parent
+                        student.save()
+                except:
+                    return Response("Parent not found or somthing wrong...", status=status.HTTP_406_NOT_ACCEPTABLE)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
