@@ -2,12 +2,15 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from accounts.serializers import UserSerializer, InstituteSerializer, StudentProfileSerializer, UserUpdateSerializer
+from accounts.serializers.student import MultipleStudentProfileSerializer
 from accounts.models import User,InstituteProfile,StudentProfile
 from accounts.views.permissions.is_institute import IsInstitute
 from accounts.models.institute_profile import InstituteProfile
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from subscription.models import Subscription
 from subscription.serializers import SubscriptionSerializer
+from datetime import datetime
+import pandas as pd
 
 class InstituteStudent(APIView):
     serializer_class = UserSerializer
@@ -52,40 +55,54 @@ class InstituteStudent(APIView):
 
 class InstituteStudentMultiple(APIView):
     serializer_class = UserSerializer
-    permission_classes = [IsInstitute]
+    permission_classes = [IsInstitute]  
+    
+    def post(self, request, *args, **kwargs):
 
-    def post(self, *args, **kwargs):
-        print('=====')
-        print(self.request.FILES['excel_file'])
+        excel_file = self.request.FILES.get('file')
+        users_data = []
+        students = []    
+        df = pd.read_excel(excel_file, dtype={'Phone Number': str})
+            
+        for _, row in df.iterrows():
+            date_value = row['Birth Date']  # Birth date
+            if isinstance(date_value, datetime):
+                date_value = date_value.date()
 
+            user_data = {
+                'phone_number': row['Phone Number'],
+                'first_name': row['First Name'],
+                'last_name': row['Last Name'],
+                'birth_date': date_value,
+            }
+            users_data.append(user_data)                
+        user_serializer = UserSerializer(data=users_data, many=True)
+        if user_serializer.is_valid():
+            users = user_serializer.save()       
+                     
+            for i, row in enumerate(df.iterrows()):
+                student_data = {
+                    'user': users[i].id, 
+                    'gender': row[1]['Gender'],
+                    'english_level': row[1]['English Level'],
+                    'institute': self.request.user.id
+                }        
+                students.append(student_data)
+            student_serializer = MultipleStudentProfileSerializer(data=students, many=True)
+            if student_serializer.is_valid():
+                student_serializer.save()
+                for user in users:
+                    user.user_type = 'student'
+                    user.set_password('12345678')
+                    user.save() 
+                    
+                return Response({"message": "Success"}, status=200)
+            else:
+                print("Student serializer errors:", student_serializer.errors)
+                return Response({"message": "Error", "errors": student_serializer.errors}, status=400)
+        else:
+            return Response({"message": "Error", "errors": user_serializer.errors}, status=400)
 
-        excel_file = self.request.FILES['excel_file']
-        # Load the workbook and access the active worksheet
-        wb = openpyxl.load_workbook(excel_file)
-        ws = wb.active
-
-        # Iterate through rows and extract data
-        for row in ws.iter_rows(min_row=2, values_only=True):
-            model, serial, hd_size, ram, processor = row
-            # Process the data as needed (e.g., create objects or update existing
-
-
-        data = self.request.data
-        data["password"] = "12345678"
-        data["user_type"] = "student"
-        serializer = self.serializer_class(data=data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            student_user = User.objects.get(id=serializer.data["id"])
-            student_user.set_password(data["password"])
-            student_user.save()
-            student_profile = StudentProfile.objects.get(user=student_user)
-            student_profile.institute = InstituteProfile.objects.get(user=self.request.user)
-            student_profile.gender = data["gender"]
-            student_profile.english_level = data["english_level"]
-            student_profile.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 

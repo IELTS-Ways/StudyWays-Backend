@@ -8,3 +8,9 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
         fields = "__all__"
+
+class MultipleStudentProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StudentProfile
+        fields = "__all__"
