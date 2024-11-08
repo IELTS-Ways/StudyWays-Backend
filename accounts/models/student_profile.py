@@ -27,6 +27,8 @@ class StudentProfile(models.Model):
     english_level = models.CharField(max_length=10, default="A1", choices=english_level_choices)
     description = models.TextField(max_length=4000, blank=True, null=True)
     image = models.ImageField(upload_to="student_photo", blank=True, null=True)
+    cart_number = models.IntegerField(null=True, blank=True)
+    shaba = models.CharField(max_length=100, null=True, blank=True)
 
     def parent_type(self):
         if self.institute:
@@ -43,3 +45,13 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == "student":
         StudentProfile.objects.create(user=instance)
 '''
+
+
+
+
+class StudentWallet(models.Model):
+    user = models.OneToOneField(StudentProfile, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=15, decimal_places=1, default=0)
+    updated_at = models.DateField(auto_now=True)
+    def __str__(self):
+        return str(self.user) + ' | '+ str(self.balance)
