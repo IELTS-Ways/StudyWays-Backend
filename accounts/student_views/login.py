@@ -4,11 +4,12 @@ from rest_framework.views import APIView
 from config import responses
 from accounts.functions import get_user_data, login
 from config.settings import ACCESS_TTL
-from accounts.serializers import UserSerializer,StudentProfileSerializer, InstituteSerializer, UserUpdateSerializer, FreelanceProfileSerializer
+from accounts.serializers import UserSerializer,StudentProfileSerializer, InstituteSerializer, \
+    UserUpdateSerializer, FreelanceProfileSerializer, StudentWalletSerializer
 from django.contrib.auth import authenticate
 from accounts.views.permissions import IsStudent
 from rest_framework.permissions import AllowAny
-from accounts.models.student_profile import StudentProfile, InstituteProfile
+from accounts.models.student_profile import StudentProfile, InstituteProfile, StudentWallet
 from subscription.models import Subscription, DefaultPrice
 
 
@@ -163,3 +164,19 @@ class StudentFull(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
+
+
+
+
+class StudentWalletView(APIView):
+    serializer_class = StudentWalletSerializer
+    permission_classes = [IsStudent]
+
+    def get(self, *args, **kwargs):
+        student = StudentProfile.objects.get(user=self.request.user)
+        wallet,created = StudentWallet.objects.get_or_create(user=student)
+        serializer = self.serializer_class(wallet)
+        return Response(serializer.data, status=status.HTTP_200_OK)
