@@ -18,6 +18,6 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         if hasattr(instance, 'freelanceprofile'):
             instance.freelanceprofile.save()
     elif instance.user_type == "marketer":
-        user_models.MarketerPanel.objects.get_or_create(user=instance)
+        MarketerPanel.objects.get_or_create(user=instance)
         if hasattr(instance, 'marketerprofile'):
             instance.marketerprofile.save()
