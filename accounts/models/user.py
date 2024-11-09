@@ -46,6 +46,7 @@ class User(AbstractUser):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
     invite_code = models.IntegerField(blank=True, null=True)
+    confirmed = models.BooleanField(default=False)
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "phone_number"
