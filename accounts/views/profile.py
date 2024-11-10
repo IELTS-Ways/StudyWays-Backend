@@ -38,9 +38,11 @@ class Profile(APIView):
             elif user.user_type == "marketer":
                 MarketerPanel.objects.get_or_create(user=user)
             elif user.user_type == "student":
+                print("is student")
                 try:
+                    print("--0-----------")
                     student, created = StudentProfile.objects.get_or_create(user=user)
-                    inviter = User.objects.get(id=int(data["invite_code"]))
+                    inviter = User.objects.get(id=data["invite_code"])
                     print('-----------------')
                     print(inviter)
                     if inviter.user_type == "freelance":
