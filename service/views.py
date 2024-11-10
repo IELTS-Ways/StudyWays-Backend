@@ -36,12 +36,17 @@ class FeedbackView(APIView):
 
 
 class Services(APIView):
-    permission_classes = [IsStudent]
+    permission_classes = [IsAuthenticated]
     serializer_class = ServiceSerializer
 
     def get(self, *args, **kwargs):
         try:
-            student = StudentProfile.objects.get(user=self.request.user)
+            user = self.request.user
+            if user.user_type == "student":
+                student = StudentProfile.objects.get(user=user)
+            else:
+                student = StudentProfile.objects.get(id=9)
+
             service = Service.objects.filter(user=student)
             serializer = self.serializer_class(service, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -50,7 +55,12 @@ class Services(APIView):
 
     def post(self, *args, **kwargs):
         data = self.request.data.copy()
-        student = StudentProfile.objects.get(user=self.request.user)
+        user = self.request.user
+        if user.user_type == "student":
+            student = StudentProfile.objects.get(user=user)
+        else:
+            student = StudentProfile.objects.get(id=9)
+
         data["user"] = student.id
         serializer = self.serializer_class(data=data,partial=True)
         if serializer.is_valid():
