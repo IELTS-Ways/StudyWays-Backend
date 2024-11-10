@@ -12,7 +12,10 @@ from django.utils.translation import gettext as _
 from rest_framework.throttling import AnonRateThrottle
 from accounts.functions import send_sms_otp
 from accounts.models import OneTimePassword,User,InstituteProfile,MarketerPanel,FreelanceProfile,StudentProfile
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 
 class Profile(APIView):
@@ -25,12 +28,10 @@ class Profile(APIView):
 
     def patch(self, *args, **kwargs):
         data = self.request.data
-        profile = User.objects.get(id=self.request.user.id)
-        serializer = UserUpdateSerializer(profile, data=data)
+        user = self.request.user
+        serializer = UserUpdateSerializer(user, data=data)
         if serializer.is_valid():
             serializer.save()
-            user = self.request.user
-
             if user.user_type == "freelance":
                 FreelanceProfile.objects.get_or_create(user=user)
             elif user.user_type == "institute":
@@ -38,31 +39,22 @@ class Profile(APIView):
             elif user.user_type == "marketer":
                 MarketerPanel.objects.get_or_create(user=user)
             elif user.user_type == "student":
-                print("is student")
                 try:
-                    print("--0-----------")
                     student, created = StudentProfile.objects.get_or_create(user=user)
                     inviter = User.objects.get(id=data["invite_code"])
-                    print('-----------------')
-                    print(inviter)
                     if inviter.user_type == "freelance":
                         freelance_parent = FreelanceProfile.objects.get(user=inviter)
-                        print(freelance_parent)
                         student.freelance = freelance_parent
-                        student.save()
                     elif inviter.user_type == "institute":
                         institute_parent = InstituteProfile.objects.get(user=inviter)
-                        print(institute_parent)
                         student.institute = institute_parent
-                        student.save()
                     else:
                         institute_parent = InstituteProfile.objects.get(id=8)
-                        print(institute_parent)
                         student.institute = institute_parent
-                        student.save()
-                except:
-                    print('==')
-                    return Response("Parent not found or somthing wrong...", status=status.HTTP_406_NOT_ACCEPTABLE)
+                    student.save()
+                except Exception as e:
+                    logger.error("Error in creating/updating student profile: %s", str(e))
+                    return Response("Parent not found or somthing wrong. {} ".format(str(e)), status=status.HTTP_406_NOT_ACCEPTABLE)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
