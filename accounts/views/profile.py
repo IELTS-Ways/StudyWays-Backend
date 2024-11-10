@@ -41,19 +41,25 @@ class Profile(APIView):
                 try:
                     student, created = StudentProfile.objects.get_or_create(user=user)
                     inviter = User.objects.get(id=int(data["invite_code"]))
+                    print('-----------------')
+                    print(inviter)
                     if inviter.user_type == "freelance":
                         freelance_parent = FreelanceProfile.objects.get(user=inviter)
+                        print(freelance_parent)
                         student.freelance = freelance_parent
                         student.save()
                     elif inviter.user_type == "institute":
                         institute_parent = InstituteProfile.objects.get(user=inviter)
+                        print(institute_parent)
                         student.institute = institute_parent
                         student.save()
                     else:
                         institute_parent = InstituteProfile.objects.get(id=8)
+                        print(institute_parent)
                         student.institute = institute_parent
                         student.save()
                 except:
+                    print('==')
                     return Response("Parent not found or somthing wrong...", status=status.HTTP_406_NOT_ACCEPTABLE)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
