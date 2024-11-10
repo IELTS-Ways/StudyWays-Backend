@@ -72,7 +72,7 @@ class AddSubPay(APIView):
                     #sales_percentage = 0.08
                     sales_percentage = decimal.Decimal('0.08')
             else:
-                sales_percentage = 0
+                sales_percentage = decimal.Decimal('0.0')
 
 
             sub = Subscription.objects.get(id=serializer.data['id'])
