@@ -84,9 +84,9 @@ class AddSubPay(APIView):
                 ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
                 appor_percent = default_price.apportionment_percentage
                 apportionment = sub.price * appor_percent
-                inviter_price = float(apportionment) * sales_percentage      #share with inviter
-                studyways_price = float(apportionment) - inviter_price       #send to us
-                institute_price = sub.price - float(apportionment)           #send to institute
+                inviter_price = float(apportionment) * float(sales_percentage)  #share with inviter
+                studyways_price = float(apportionment) - inviter_price          #send to us
+                institute_price = float(sub.price) - float(apportionment)       #send to institute
                 sub.institute_price = institute_price
 
             else:
@@ -96,9 +96,9 @@ class AddSubPay(APIView):
                 ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
                 appor_percent = default_price.freelance_apportionment_percentage
                 freelance_price = sub.price * appor_percent         #share with freelance
-                apportionment = sub.price - float(freelance_price)
+                apportionment = float(sub.price) - float(freelance_price)
                 sub.freelance_price = freelance_price
-                inviter_price = apportionment * sales_percentage     #share with inviter
+                inviter_price = apportionment * float(sales_percentage)     #share with inviter
 
             sub.inviter_sales_percentage = sales_percentage
             sub.inviter_price = inviter_price
