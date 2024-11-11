@@ -75,7 +75,7 @@ class InstituteStudentMultiple(APIView):
                 errors.append({
                     "row": index + 1, 
                     "phone_number": row['Phone Number'],
-                    "error": "This phone number is already exits!"
+                    "error": "This phone number already exits!"
                 })
                 continue
             
@@ -89,24 +89,29 @@ class InstituteStudentMultiple(APIView):
         user_serializer = UserSerializer(data=users_data, many=True)
         if user_serializer.is_valid():
             users = user_serializer.save()       
-                     
             for i, row in enumerate(df.iterrows()):
                 if i < len(users):
                     student_data = {
                         'user': users[i].id,
                         'gender': row[1]['Gender'],
                         'english_level': row[1]['English Level'],
-                        'institute': self.request.user.id
                     }
+                    
                     students.append(student_data)
             student_serializer = MultipleStudentProfileSerializer(data=students, many=True)
             if student_serializer.is_valid():
-                student_serializer.save()
+                student_ser = student_serializer.save()
+                institute = InstituteProfile.objects.get(user=self.request.user)
+                
+                for student in student_ser:
+                    student.institute = institute
+                    student.save()
+                              
                 for user in users:
                     user.user_type = 'student'
                     user.set_password('12345678')
                     user.save() 
-                    
+                                       
                 return Response({"message": "Success", "errors": errors}, status=200)
             else:
                 print("Student serializer errors:", student_serializer.errors)
