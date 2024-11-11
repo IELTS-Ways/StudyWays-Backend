@@ -62,14 +62,23 @@ class InstituteStudentMultiple(APIView):
 
         excel_file = self.request.FILES.get('file')
         users_data = []
-        students = []    
+        students = []  
+        errors = []  
         df = pd.read_excel(excel_file, dtype={'Phone Number': str})
             
-        for _, row in df.iterrows():
+        for index, row in df.iterrows():
             date_value = row['Birth Date']  # Birth date
             if isinstance(date_value, datetime):
                 date_value = date_value.date()
-
+                
+            if User.objects.filter(phone_number=row['Phone Number']).exists():
+                errors.append({
+                    "row": index + 1, 
+                    "phone_number": row['Phone Number'],
+                    "error": "This phone number already exits!"
+                })
+                continue
+            
             user_data = {
                 'phone_number': row['Phone Number'],
                 'first_name': row['First Name'],
@@ -80,24 +89,30 @@ class InstituteStudentMultiple(APIView):
         user_serializer = UserSerializer(data=users_data, many=True)
         if user_serializer.is_valid():
             users = user_serializer.save()       
-                     
             for i, row in enumerate(df.iterrows()):
-                student_data = {
-                    'user': users[i].id, 
-                    'gender': row[1]['Gender'],
-                    'english_level': row[1]['English Level'],
-                    'institute': self.request.user.id
-                }        
-                students.append(student_data)
+                if i < len(users):
+                    student_data = {
+                        'user': users[i].id,
+                        'gender': row[1]['Gender'],
+                        'english_level': row[1]['English Level'],
+                    }
+                    
+                    students.append(student_data)
             student_serializer = MultipleStudentProfileSerializer(data=students, many=True)
             if student_serializer.is_valid():
-                student_serializer.save()
+                student_ser = student_serializer.save()
+                institute = InstituteProfile.objects.get(user=self.request.user)
+                
+                for student in student_ser:
+                    student.institute = institute
+                    student.save()
+                              
                 for user in users:
                     user.user_type = 'student'
                     user.set_password('12345678')
                     user.save() 
-                    
-                return Response({"message": "Success"}, status=200)
+                                       
+                return Response({"message": "Success", "errors": errors}, status=200)
             else:
                 print("Student serializer errors:", student_serializer.errors)
                 return Response({"message": "Error", "errors": student_serializer.errors}, status=400)
