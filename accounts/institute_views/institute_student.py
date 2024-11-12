@@ -65,11 +65,26 @@ class InstituteStudentMultiple(APIView):
         students = []  
         errors = []  
         df = pd.read_excel(excel_file, dtype={'Phone Number': str})
+        
+        required_fields = ['Phone Number', 'First Name', 'Last Name', 'Birth Date', 'Gender', 'English Level']
             
         for index, row in df.iterrows():
             date_value = row['Birth Date']  # Birth date
             if isinstance(date_value, datetime):
                 date_value = date_value.date()
+                
+            missing_fields = []
+            for field in required_fields:
+                if pd.isna(row.get(field)) or row.get(field) == "":
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                errors.append({
+                    "row": index + 1,
+                    "missing_fields": missing_fields,
+                    "error": "These fields are required and cannot be empty."
+                })
+                continue
                 
             if User.objects.filter(phone_number=row['Phone Number']).exists():
                 errors.append({
@@ -85,7 +100,9 @@ class InstituteStudentMultiple(APIView):
                 'last_name': row['Last Name'],
                 'birth_date': date_value,
             }
-            users_data.append(user_data)                
+            users_data.append(user_data)
+        if errors:
+            return Response({"message": "Validation errors found","errors": errors}, status=400)                
         user_serializer = UserSerializer(data=users_data, many=True)
         if user_serializer.is_valid():
             users = user_serializer.save()       
@@ -112,7 +129,7 @@ class InstituteStudentMultiple(APIView):
                     user.set_password('12345678')
                     user.save() 
                                        
-                return Response({"message": "Success", "errors": errors}, status=200)
+                return Response({"message": "Success"}, status=200)
             else:
                 print("Student serializer errors:", student_serializer.errors)
                 return Response({"message": "Error", "errors": student_serializer.errors}, status=400)
