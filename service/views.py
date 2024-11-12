@@ -306,8 +306,6 @@ class ServicesCorrection(APIView):
             service.full_result = data
             service.save()
             return Response(data, status=status.HTTP_200_OK)
-        except:
-            return Response("service not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
-
-
+        except Exception as e:
+            return Response(f"service not found or something went wrong, try again. Error:{e}", status=status.HTTP_400_BAD_REQUEST)
 
