@@ -7,3 +7,14 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         #fields = "__all__"
         fields = ("id", "type", "day_period", "price", "created_at", "user", "expired")
+        
+class FreelanceTransactionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ('type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'freelance_price')
+        
+        
+class InstituteTransactionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ('type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price')
