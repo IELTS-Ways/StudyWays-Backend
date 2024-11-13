@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent, IsMarketer
-from accounts.models import InstituteProfile, StudentProfile, FreelanceProfile, MarketerPanel
-from subscription.serializers import SubscriptionSerializer, FreelanceTransactionsSerializer, InstituteTransactionsSerializer
+from accounts.models import InstituteProfile, StudentProfile, FreelanceProfile, MarketerPanel, User
+from subscription.serializers import SubscriptionSerializer, FreelanceTransactionsSerializer, InstituteTransactionsSerializer, InviterTransactionsSerializer
 from subscription.models import Subscription, DefaultPrice
 import json
 import requests
@@ -67,16 +67,45 @@ class InstituteTransactions(GenericAPIView):
 
 
 
-class MarketerTransactions(APIView):
-    serializer_class = SubscriptionSerializer
+class MarketerTransactions(GenericAPIView):
     permission_classes = [IsMarketer]
+    queryset = Subscription.objects.all()
+    pagination_class = CustomPagination
+    serializer_class = InviterTransactionsSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
+    search_fields = ['type', 'status','day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'inviter_sales_percentage', 'inviter_price']
+    ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
 
     def get(self, *args, **kwargs):
-        try:
-            marketer = MarketerPanel.objects.get(user=self.request.user)
-            # should add lines...
-            sub = Subscription.objects.filter(freelance=marketer)
-            serializer = self.serializer_class(sub, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return Response("Subscription not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
+        sender = User.objects.get(id=self.request.user.id)
+        invite_code = sender.invite_code
+        invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        page = self.paginate_queryset(invited_user)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class StudentTransactions(GenericAPIView):
+    permission_classes = [IsStudent]
+    queryset = Subscription.objects.all()
+    pagination_class = CustomPagination
+    serializer_class = InviterTransactionsSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
+    search_fields = ['type', 'status','day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'inviter_sales_percentage', 'inviter_price']
+    ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
+
+    def get(self, *args, **kwargs):
+        sender = User.objects.get(id=self.request.user.id)
+        invite_code = sender.invite_code
+        invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        page = self.paginate_queryset(invited_user)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        return Response(serializer.data, status=status.HTTP_200_OK)
