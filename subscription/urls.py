@@ -1,6 +1,6 @@
 from django.urls import path
 from subscription.views import StudentSubs, AddSub, AddSubPay, SubPayVerify, Membership
-from subscription.transactions import FreelanceTransactions, MarketerTransactions,InstituteTransactions
+from subscription.transactions import FreelanceTransactions, MarketerTransactions,InstituteTransactions, StudentTransactions
 
 
 urlpatterns = [
@@ -15,4 +15,6 @@ urlpatterns = [
     path("marketer-transactions", MarketerTransactions.as_view(), name="marketer-transactions"),
     # 
     path("institute-transactions", InstituteTransactions.as_view(), name="institute-transactions"),
+    # 
+    path("student-transactions", StudentTransactions.as_view(), name="student-transactions"),
 ]
