@@ -27,7 +27,7 @@ class StudentProfile(models.Model):
     english_level = models.CharField(max_length=10, default="A1", choices=english_level_choices)
     description = models.TextField(max_length=4000, blank=True, null=True)
     image = models.ImageField(upload_to="student_photo", blank=True, null=True)
-    cart_number = models.IntegerField(null=True, blank=True)
+    cart_number = models.BigIntegerField(null=True, blank=True)
     shaba = models.CharField(max_length=100, null=True, blank=True)
 
     def parent_type(self):
