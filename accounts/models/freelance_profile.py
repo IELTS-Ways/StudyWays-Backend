@@ -28,7 +28,7 @@ class FreelanceProfile(models.Model):
     #ZP_MERCHANT_ID = models.CharField(max_length=256,default="00000000-0000-0000-0000-000000000000",blank=True,null=True)
     primary_color = models.CharField(max_length=100, blank=True, null=True)
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
-    cart_number = models.IntegerField(null=True, blank=True)
+    cart_number = models.BigIntegerField(null=True, blank=True)
     shaba = models.CharField(max_length=100, null=True, blank=True)
     #memory_mirror_price = models.IntegerField(blank=True, null=True)
     #audio_scripter_price = models.IntegerField(blank=True, null=True)
