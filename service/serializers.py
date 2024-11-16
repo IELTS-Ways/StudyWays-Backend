@@ -7,8 +7,15 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         #fields = "__all__"
         exclude = ['full_result']
+        
 
-
+class ServiceHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        # fields = "__all__"
+        exclude = ['playback', 'full_result', 'share_with']
+        
+        
 class MultipleSpellingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MultipleSpellings
