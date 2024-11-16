@@ -176,7 +176,11 @@ class ServicesCorrection(APIView):
                         if new_word.strip() not in spell:
                         #if spell.unknown(new_word.strip()):
                             misspelled_words.append(new_word.strip())
-                            misspelled_words_correct.append(missing_word.strip())
+                            #misspelled_words_correct.append(missing_word.strip())
+
+                            correction = spell.correction(new_word.strip())
+                            misspelled_words_correct.append(correction if correction else new_word.strip())
+
                             highlight += f"<span style='color:#414547'> ( <del>{new_word.strip()}</del> ) </span> "
                         else:
                             new_words.append(new_word.strip())
@@ -308,4 +312,6 @@ class ServicesCorrection(APIView):
             return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(f"service not found or something went wrong, try again. Error:{e}", status=status.HTTP_400_BAD_REQUEST)
+
+
 
