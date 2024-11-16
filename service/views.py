@@ -130,7 +130,6 @@ class ServicesCorrectionAI(APIView):
 
 
 
-
 class ServicesCorrection(APIView):
     serializer_class = ServiceSerializer
     permission_classes = [IsAuthenticated]
