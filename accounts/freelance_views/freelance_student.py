@@ -19,30 +19,32 @@ class CustomPagination(PageNumberPagination):
     
 
 
-class FreelanceStudentList(GenericAPIView):
+class FreelanceStudent(GenericAPIView):
     permission_classes = [IsFreelance]
     queryset = User.objects.all()
     pagination_class = CustomPagination
-    serializer_class = StudentProfileSerializer
+    serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['user', 'is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
     search_fields = ['is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
     ordering_fields = ['user', 'is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
 
     def get(self, *args, **kwargs):
+        data = []
         freelance = FreelanceProfile.objects.get(user=self.request.user)
         students = self.filter_queryset(StudentProfile.objects.filter(freelance=freelance))
-        page = self.paginate_queryset(students)
+        for obj in students:
+            student_serializer = StudentProfileSerializer(obj)
+            student_sub = Subscription.objects.filter(user=obj,paid=True)
+            sub_serializer = SubscriptionSerializer(student_sub,many=True)
+            student_data = {"student":student_serializer.data, "subscription":sub_serializer.data}
+            data.append(student_data)
+        page = self.paginate_queryset(data)
         if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(page)
         serializer = self.filter_queryset(StudentProfile.objects.filter(freelance=freelance))
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-class FreelanceStudent(APIView):
-    serializer_class = UserSerializer
-    permission_classes = [IsFreelance]
-
+        
     def post(self, *args, **kwargs):
         data = self.request.data
         data["password"] = "12345678"

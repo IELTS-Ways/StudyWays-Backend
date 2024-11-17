@@ -23,33 +23,32 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100
     
 
-
-class InstituteStudentList(GenericAPIView):
+class InstituteStudent(GenericAPIView):
     permission_classes = [IsInstitute]
     queryset = User.objects.all()
     pagination_class = CustomPagination
-    serializer_class = StudentProfileSerializer
+    serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['user', 'is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
     search_fields = ['is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
     ordering_fields = ['user', 'is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
 
     def get(self, *args, **kwargs):
+        data = []
         institute = InstituteProfile.objects.get(user=self.request.user)
         students = self.filter_queryset(StudentProfile.objects.filter(institute=institute))
-        page = self.paginate_queryset(students)
+        for obj in students:
+            student_serializer = StudentProfileSerializer(obj)
+            student_sub = Subscription.objects.filter(user=obj,paid=True)
+            sub_serializer = SubscriptionSerializer(student_sub,many=True)
+            student_data = {"student":student_serializer.data, "subscription":sub_serializer.data}
+            data.append(student_data)
+        page = self.paginate_queryset(data)
         if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(page)
         serializer = self.filter_queryset(StudentProfile.objects.filter(institute=institute))
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    
-
-class InstituteStudent(APIView):
-    serializer_class = UserSerializer
-    permission_classes = [IsInstitute]
-
+        
     def post(self, *args, **kwargs):
         data = self.request.data
         data["password"] = "12345678"
@@ -61,7 +60,7 @@ class InstituteStudent(APIView):
             student_user.set_password(data["password"])
             student_user.save()
             student_profile = StudentProfile.objects.get(user=student_user)
-            student_profile.institute = InstituteProfile.objects.get(user=self.request.user)
+            student_profile.freelance = InstituteProfile.objects.get(user=self.request.user)
             student_profile.gender = data["gender"]
             student_profile.english_level = data["english_level"]
             student_profile.education = data["education"]
