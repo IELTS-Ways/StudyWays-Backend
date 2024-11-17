@@ -39,7 +39,7 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=50,null=True,blank=True)
     last_name = models.CharField(max_length=50, null=True, blank=True)
     phone_number = models.CharField(validators=[phone_regex],max_length=11,unique=True)
-    email = models.EmailField(max_length=70,null=True,blank=True,unique=True)
+    email = models.EmailField(max_length=90,null=True,blank=True,unique=True)
     birth_date = models.DateField(null=True,blank=True)
     education = models.CharField(max_length=100, default="BA/BSc",choices=education_type_choices)
     majors_name = models.CharField(max_length=100, null=True, blank=True)

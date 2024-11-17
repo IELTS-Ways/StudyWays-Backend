@@ -59,7 +59,7 @@ class Services(APIView):
         if user.user_type == "student":
             student = StudentProfile.objects.get(user=user)
         else:
-            student = StudentProfile.objects.get(id=9)
+            student = StudentProfile.objects.get(id=203)
 
         data["user"] = student.id
         serializer = self.serializer_class(data=data,partial=True)
