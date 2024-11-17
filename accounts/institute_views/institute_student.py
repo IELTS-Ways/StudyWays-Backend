@@ -11,24 +11,44 @@ from subscription.models import Subscription
 from subscription.serializers import SubscriptionSerializer
 from datetime import datetime
 import pandas as pd
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.generics import GenericAPIView
 
+
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+    
+
+
+class InstituteStudentList(GenericAPIView):
+    permission_classes = [IsInstitute]
+    queryset = User.objects.all()
+    pagination_class = CustomPagination
+    serializer_class = StudentProfileSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['user', 'is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
+    search_fields = ['is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
+    ordering_fields = ['user', 'is_IELTS_student', 'gender', 'english_level', 'description', 'cart_number', 'shaba']
+
+    def get(self, *args, **kwargs):
+        institute = InstituteProfile.objects.get(user=self.request.user)
+        students = self.filter_queryset(StudentProfile.objects.filter(institute=institute))
+        page = self.paginate_queryset(students)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.filter_queryset(StudentProfile.objects.filter(institute=institute))
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
 
 class InstituteStudent(APIView):
     serializer_class = UserSerializer
     permission_classes = [IsInstitute]
-
-    def get(self, *args, **kwargs):
-        data = []
-        institute = InstituteProfile.objects.get(user=self.request.user)
-        student = StudentProfile.objects.filter(institute=institute)
-        for obj in student:
-            student_serializer = StudentProfileSerializer(obj)
-            student_sub = Subscription.objects.filter(user=obj,paid=True)
-            sub_serializer = SubscriptionSerializer(student_sub,many=True)
-            student_data = {"student":student_serializer.data, "subscription":sub_serializer.data}
-            data.append(student_data)
-        #serializer = StudentProfileSerializer(student,many=True)
-        return Response(data, status=status.HTTP_200_OK)
 
     def post(self, *args, **kwargs):
         data = self.request.data
