@@ -30,7 +30,7 @@ class InstituteStudent(GenericAPIView):
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['user', 'is_IELTS_student', 'gender', 'english_level']
-    search_fields = ['user__first_name', 'user__last_name', 'user__national_code', 'gender']
+    search_fields = ['user__first_name', 'user__last_name', 'user__national_code', 'user__phone_number', 'gender']
     ordering_fields = ['user', 'is_IELTS_student', 'gender', 'english_level']
 
     def get(self, *args, **kwargs):
