@@ -60,7 +60,7 @@ class InstituteStudent(GenericAPIView):
             student_user.set_password(data["password"])
             student_user.save()
             student_profile = StudentProfile.objects.get(user=student_user)
-            student_profile.freelance = InstituteProfile.objects.get(user=self.request.user)
+            student_profile.institute = InstituteProfile.objects.get(user=self.request.user)
             student_profile.gender = data["gender"]
             student_profile.english_level = data["english_level"]
             student_profile.education = data["education"]
