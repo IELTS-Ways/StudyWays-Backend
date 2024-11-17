@@ -49,7 +49,7 @@ class Profile(APIView):
                         institute_parent = InstituteProfile.objects.get(user=inviter)
                         student.institute = institute_parent
                     else:
-                        institute_parent = InstituteProfile.objects.get(id=320)
+                        institute_parent = InstituteProfile.objects.get(id=76)
                         student.institute = institute_parent
                     student.save()
                 except Exception as e:
