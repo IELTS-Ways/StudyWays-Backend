@@ -99,10 +99,15 @@ class FreelanceStudentItem(APIView):
     permission_classes = [IsFreelance]
     def get(self, *args, **kwargs):
         try:
+            data = []
             freelance = FreelanceProfile.objects.get(user=self.request.user)
             student = StudentProfile.objects.get(id=self.kwargs["id"],freelance=freelance)
-            serializer = self.serializer_class(student)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            student_serializer = self.serializer_class(student)
+            student_sub = Subscription.objects.filter(user=student,paid=True)
+            sub_serializer = SubscriptionSerializer(student_sub,many=True)
+            student_data = {"student":student_serializer.data, "subscription":sub_serializer.data}
+            data.append(student_data)
+            return Response(data, status=status.HTTP_200_OK)
         except:
             return Response("Student not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
 
