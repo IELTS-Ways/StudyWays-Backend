@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from subscription.models import Subscription
+from subscription.models import Subscription, Withdraw
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -24,3 +24,9 @@ class InviterTransactionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ('type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'inviter_sales_percentage', 'inviter_price')
+
+
+class WithdrawRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Withdraw
+        fields = '__all__'

@@ -2,8 +2,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
+from rest_framework.permissions import IsAuthenticated
 from accounts.models import InstituteProfile, StudentProfile, User
-from subscription.serializers import SubscriptionSerializer
+from subscription.serializers import SubscriptionSerializer, WithdrawRequestSerializer
 from subscription.models import Subscription, DefaultPrice
 import json
 import requests
@@ -47,6 +48,20 @@ class AddSub(APIView):
 
 
 
+class WithdrawRequest(APIView):
+    serializer_class = WithdrawRequestSerializer
+    permission_classes = [IsAuthenticated]
+    def post(self, *args, **kwargs):
+        data = self.request.data.copy()
+        user = self.request.user
+        data["user"] = user.id
+        serializer = self.serializer_class(data=data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+    
+    
 
 class AddSubPay(APIView):
     serializer_class = SubscriptionSerializer

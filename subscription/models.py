@@ -77,3 +77,20 @@ class DefaultPrice(SingletonModel):
     shaba_number = models.CharField(max_length=256,blank=True,null=True)
     def __str__(self):
         return str(self.audio_video_scripter) +" | "+ str(self.memory_mirror)
+    
+    
+class Withdraw(models.Model):
+    STATUS_CHOICES = [
+        ('New', 'New'),
+        ('Pending', 'Pending'),         
+        ('Paid', 'Paid'),
+        ('Cancelled', 'Cancelled'), 
+    ]
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='New')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    cart_number = models.BigIntegerField(blank=True, null=True)
+    shaba = models.CharField(max_length=150, blank=True, null=True)
+    price = models.IntegerField(default=0)
+    description = models.TextField(max_length=1000, blank=True, null=True)
+    
