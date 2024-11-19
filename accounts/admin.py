@@ -5,6 +5,8 @@ from import_export.admin import ImportExportModelAdmin
 
 class UserAdmin(ImportExportModelAdmin):
     list_display = ('phone_number','user_type','email','id','is_profile_fill', 'created_at')
+    list_filter = ("user_type", "confirmed", "created_at")
+    search_fields = ['phone_number', 'first_name', 'last_name', 'email', 'username']
 admin.site.register(User, UserAdmin)
 
 class StudentProfileAdmin(ImportExportModelAdmin):
