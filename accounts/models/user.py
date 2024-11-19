@@ -44,7 +44,7 @@ class User(AbstractUser):
     education = models.CharField(max_length=100, default="BA/BSc",choices=education_type_choices)
     majors_name = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
     invite_code = models.IntegerField(blank=True, null=True)
     confirmed = models.BooleanField(default=True)
 
