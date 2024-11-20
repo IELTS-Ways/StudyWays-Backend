@@ -4,6 +4,8 @@ import datetime
 from datetime import datetime as date_time
 from django.core.exceptions import ValidationError
 
+
+
 class SingletonModel(models.Model):
     class Meta:
         abstract = True
