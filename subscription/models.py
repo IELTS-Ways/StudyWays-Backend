@@ -91,6 +91,8 @@ class Withdraw(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     cart_number = models.BigIntegerField(blank=True, null=True)
     shaba = models.CharField(max_length=150, blank=True, null=True)
-    price = models.IntegerField(default=0)
+    price = models.DecimalField(max_digits=100, decimal_places=2)
     description = models.TextField(max_length=1000, blank=True, null=True)
     
+    def __str__(self):
+        return str(self.user) + '-' + str(self.status) 

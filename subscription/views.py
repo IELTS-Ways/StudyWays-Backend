@@ -55,7 +55,7 @@ class WithdrawRequest(APIView):
         data = self.request.data.copy()
         user = self.request.user
         data["user"] = user.id
-        serializer = self.serializer_class(data=data,partial=True)
+        serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
