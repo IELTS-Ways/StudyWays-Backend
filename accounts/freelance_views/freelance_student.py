@@ -102,11 +102,23 @@ class FreelanceStudentItem(APIView):
             freelance = FreelanceProfile.objects.get(user=self.request.user)
             student = StudentProfile.objects.get(id=self.kwargs["id"],freelance=freelance)
             student_serializer = self.serializer_class(student)
-            student_sub = Subscription.objects.filter(user=student,paid=True)
-            sub_serializer = SubscriptionSerializer(student_sub,many=True)
+            active_subs = Subscription.objects.filter(user=student, status="Active")
+            audio_video_scripter = active_subs.filter(type="Audio-Video-Scripter").last()
+            if audio_video_scripter:
+                audio_video_scripter_remaining_days = audio_video_scripter.remaining_days()
+            else:
+                audio_video_scripter_remaining_days = 0
+            
+            memory_mirror = active_subs.filter(type="Memory-Mirror").last()
+            if memory_mirror:
+                memory_mirror_remaining_days = memory_mirror.remaining_days()
+            else:
+                memory_mirror_remaining_days = 0
+            membership = {"Audio-Video-Scripter": audio_video_scripter_remaining_days,
+                        "Memory-Mirror": memory_mirror_remaining_days}          
             combined_data = {
                 **student_serializer.data,
-                "subscription": sub_serializer.data
+                "membership": membership,
             }
             return Response(combined_data, status=status.HTTP_200_OK)
         except:
