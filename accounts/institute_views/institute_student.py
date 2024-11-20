@@ -164,15 +164,16 @@ class InstituteStudentItem(APIView):
     permission_classes = [IsInstitute]
     def get(self, *args, **kwargs):
         try:
-            data = []
             institute = InstituteProfile.objects.get(user=self.request.user)
             student = StudentProfile.objects.get(id=self.kwargs["id"],institute=institute)
             student_serializer = self.serializer_class(student)
             student_sub = Subscription.objects.filter(user=student,paid=True)
             sub_serializer = SubscriptionSerializer(student_sub,many=True)
-            student_data = {"student":student_serializer.data, "subscription":sub_serializer.data}
-            data.append(student_data)
-            return Response(data, status=status.HTTP_200_OK)
+            combined_data = {
+                **student_serializer.data,
+                "subscription": sub_serializer.data
+            }
+            return Response(combined_data, status=status.HTTP_200_OK)
         except:
             return Response("Student not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
 
