@@ -132,7 +132,7 @@ class ServicesCorrectionAI(APIView):
 
 class ServicesCorrection(APIView):
     serializer_class = ServiceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, *args, **kwargs):
         try:
@@ -163,6 +163,7 @@ class ServicesCorrection(APIView):
                 diff = list(differ.compare(original_words, revised_words))
 
                 spell = SpellChecker()
+                missing_word = None  # Initialize missing_word with a default value
                 missing_words = []
                 misspelled_words = []
                 misspelled_words_correct = []
