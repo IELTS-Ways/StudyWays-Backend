@@ -175,7 +175,8 @@ class ServicesCorrection(APIView):
                         if new_word.strip() not in spell:
                         #if spell.unknown(new_word.strip()):
                             misspelled_words.append(new_word.strip())
-
+                            print('--------')
+                            print(missing_word)
                             if missing_word:
                                 misspelled_words_correct.append(missing_word.strip())
 
