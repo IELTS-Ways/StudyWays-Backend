@@ -132,7 +132,7 @@ class ServicesCorrectionAI(APIView):
 
 class ServicesCorrection(APIView):
     serializer_class = ServiceSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, *args, **kwargs):
         try:
@@ -176,13 +176,8 @@ class ServicesCorrection(APIView):
                         if new_word.strip() not in spell:
                         #if spell.unknown(new_word.strip()):
                             misspelled_words.append(new_word.strip())
-                            print('--------')
-                            print(missing_word)
                             if missing_word:
                                 misspelled_words_correct.append(missing_word.strip())
-
-                            #correction = spell.correction(new_word.strip())
-                            #misspelled_words_correct.append(correction if correction else new_word.strip())
 
                             highlight += f"<span style='color:#414547'> ( <del>{new_word.strip()}</del> ) </span> "
                         else:
