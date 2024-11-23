@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
 from rest_framework.permissions import IsAuthenticated
+from accounts.models import MarketerWallet, FreelanceWallet
 from accounts.models import InstituteProfile, StudentProfile, User
 from subscription.serializers import SubscriptionSerializer, WithdrawRequestSerializer
 from subscription.models import Subscription, DefaultPrice
@@ -55,6 +56,21 @@ class WithdrawRequest(APIView):
         data = self.request.data.copy()
         user = self.request.user
         data["user"] = user.id
+        price = self.request.data.get('price') 
+
+        if user.user_type == "marketer":
+            wallet = MarketerWallet.objects.get(user__user=user)
+        elif user.user_type == "freelance":
+            wallet = FreelanceWallet.objects.get(user__user=user)
+        else:
+            return Response({"error": "Invalid user type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if wallet.balance < price:
+            return Response(
+                {"error": "Insufficient wallet balance.", "current_balance": wallet.balance},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
