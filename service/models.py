@@ -33,6 +33,7 @@ class Service(models.Model):
 
 
 
+
 class MultipleSpellings(models.Model):
     UK = models.CharField(max_length=70, null=True, blank=True)
     US = models.CharField(max_length=70, null=True, blank=True)
