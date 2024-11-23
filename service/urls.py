@@ -11,4 +11,3 @@ urlpatterns = [
     # 
     path("student-history", StudentHistory.as_view(), name="student-history"),
 ]
-
