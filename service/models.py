@@ -24,7 +24,7 @@ class Service(models.Model):
     average = models.DecimalField(decimal_places=2,max_digits=10, null=True, blank=True)
     playback = models.BooleanField(default=False)
     missing_words = models.IntegerField(default=0)
-    device = models.CharField(max_length=100, null=True, blank=True)
+    device = models.CharField(max_length=100, default="unknown")
     created_at = models.DateTimeField(auto_now_add=True)
     full_result = models.JSONField(null=True, blank=True)
 
