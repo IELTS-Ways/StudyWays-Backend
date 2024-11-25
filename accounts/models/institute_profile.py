@@ -43,3 +43,10 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == "institute":
         InstituteProfile.objects.create(user=instance)
 '''
+
+class InstituteWallet(models.Model):
+    user = models.OneToOneField(InstituteProfile, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=15, decimal_places=1, default=0)
+    updated_at = models.DateField(auto_now=True)
+    def __str__(self):
+        return str(self.user) + ' | '+ str(self.balance)
