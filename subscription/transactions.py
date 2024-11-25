@@ -74,16 +74,36 @@ class InstituteTransactions(GenericAPIView):
     filterset_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price']
     search_fields = ['type', 'status','day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price']
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price']
-
-    def get(self, *args, **kwargs):
-        institute = InstituteProfile.objects.get(user=self.request.user)
+    
+    def get(self, request, *args, **kwargs):
+        institute = InstituteProfile.objects.get(user=request.user)
+        
         trans = self.filter_queryset(Subscription.objects.filter(institute=institute))
-        page = self.paginate_queryset(trans)
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.filter_queryset(Subscription.objects.filter(institute=institute))
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        subscriptions_page = self.paginate_queryset(trans)
+        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data if subscriptions_page else []
+
+        withdraw_requests = Withdraw.objects.filter(user=request.user)
+        withdraw_status = request.query_params.get('withdraw_status')
+        if withdraw_status:
+            withdraw_requests = withdraw_requests.filter(status=withdraw_status)
+        
+        withdraw_order = request.query_params.get('withdraw_ordering', None)
+        if withdraw_order:
+            withdraw_requests = withdraw_requests.order_by(withdraw_order)
+            
+        withdraw_requests_page = self.paginate_queryset(withdraw_requests)
+        withdraw_requests_data = WithdrawRequestSerializer(withdraw_requests_page, many=True).data if withdraw_requests_page else []
+
+        results = {
+            "subscriptions": subscriptions_data,
+            "withdraw_requests": withdraw_requests_data,
+        }
+
+        if subscriptions_page or withdraw_requests_page:
+            return self.get_paginated_response(results)
+
+        return Response(results, status=status.HTTP_200_OK)
+
 
 
 
@@ -148,13 +168,31 @@ class StudentTransactions(GenericAPIView):
     search_fields = ['type', 'status','day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'inviter_sales_percentage', 'inviter_price']
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         sender = User.objects.get(id=self.request.user.id)
         invite_code = sender.invite_code
         invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
-        page = self.paginate_queryset(invited_user)
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        subscriptions_page = self.paginate_queryset(invited_user)
+        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data if subscriptions_page else []
+
+        withdraw_requests = Withdraw.objects.filter(user=request.user)
+        withdraw_status = request.query_params.get('withdraw_status')
+        if withdraw_status:
+            withdraw_requests = withdraw_requests.filter(status=withdraw_status)
+        
+        withdraw_order = request.query_params.get('withdraw_ordering', None)
+        if withdraw_order:
+            withdraw_requests = withdraw_requests.order_by(withdraw_order)
+            
+        withdraw_requests_page = self.paginate_queryset(withdraw_requests)
+        withdraw_requests_data = WithdrawRequestSerializer(withdraw_requests_page, many=True).data if withdraw_requests_page else []
+
+        results = {
+            "subscriptions": subscriptions_data,
+            "withdraw_requests": withdraw_requests_data,
+        }
+
+        if subscriptions_page or withdraw_requests_page:
+            return self.get_paginated_response(results)
+
+        return Response(results, status=status.HTTP_200_OK)

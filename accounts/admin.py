@@ -1,5 +1,7 @@
 from django.contrib import admin
 from accounts.models import User, StudentProfile, FreelanceProfile, InstituteProfile, MarketerPanel, MarketerWallet, FreelanceWallet
+from accounts.models.student_profile import StudentWallet
+from accounts.models.institute_profile import InstituteWallet
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -32,3 +34,11 @@ admin.site.register(MarketerWallet, MarketerWalletAdmin)
 class FreelanceWalletAdmin(ImportExportModelAdmin):
     list_display = ("user", "balance", "updated_at")
 admin.site.register(FreelanceWallet, FreelanceWalletAdmin)
+
+class StudentWalletAdmin(ImportExportModelAdmin):
+    list_display = ("user", "balance", "updated_at")
+admin.site.register(StudentWallet, StudentWalletAdmin)
+
+class InstituteWalletAdmin(ImportExportModelAdmin):
+    list_display = ("user", "balance", "updated_at")
+admin.site.register(InstituteWallet, InstituteWalletAdmin)

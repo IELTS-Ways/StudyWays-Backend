@@ -3,7 +3,8 @@ from django.dispatch import receiver
 from subscription.models import Withdraw
 from accounts.models.marketer_panel import MarketerWallet
 from accounts.models.freelance_profile import FreelanceWallet
-
+from accounts.models.student_profile import StudentWallet
+from accounts.models.institute_profile import InstituteWallet
 @receiver(post_save, sender=Withdraw)
 def update_wallet_balance(sender, instance, **kwargs):
     if instance.status == 'Paid':
@@ -11,10 +12,12 @@ def update_wallet_balance(sender, instance, **kwargs):
 
         if user.user_type == 'marketer':
             wallet = MarketerWallet.objects.get(user__user=user)
-        # elif user.user_type == 'student':
-            # pass
+        elif user.user_type == 'student':
+            wallet = StudentWallet.objects.get(user__user=user)
         elif user.user_type == 'freelance':
             wallet = FreelanceWallet.objects.get(user__user=user)
+        elif user.user_type == 'institute':
+            wallet = InstituteWallet.objects.get(user__user=user)
         else:
             raise ValueError("Invalid user type.")
 
