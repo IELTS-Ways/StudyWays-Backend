@@ -303,12 +303,14 @@ CKEDITOR_CONFIGS = {
             ['Format', 'Font', 'FontSize'],
             ['Bold', 'Italic'],
             ['TextColor', 'BGColor'],
+            ['JustifyLeft', 'JustifyRight'],
             ['NumberedList', 'BulletedList'],
             ['Image', 'Flash', 'Table'],
             ['Source']
         ],
         'height': 100,
-        'width': 650
+        'width': 650,
+        'extraPlugins': 'justify',
     }
 }
 
