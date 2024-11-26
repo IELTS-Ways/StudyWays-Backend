@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
 from rest_framework.permissions import IsAuthenticated
 from accounts.models import MarketerWallet, FreelanceWallet
-from accounts.models import InstituteProfile, StudentProfile, User
+from accounts.models import InstituteProfile, StudentProfile, User, StudentWallet, InstituteWallet
 from subscription.serializers import SubscriptionSerializer, WithdrawRequestSerializer
 from subscription.models import Subscription, DefaultPrice
 import json
@@ -58,10 +58,14 @@ class WithdrawRequest(APIView):
         data["user"] = user.id
         price = self.request.data.get('price') 
 
-        if user.user_type == "marketer":
+        if user.user_type == 'marketer':
             wallet = MarketerWallet.objects.get(user__user=user)
-        elif user.user_type == "freelance":
+        elif user.user_type == 'student':
+            wallet = StudentWallet.objects.get(user__user=user)
+        elif user.user_type == 'freelance':
             wallet = FreelanceWallet.objects.get(user__user=user)
+        elif user.user_type == 'institute':
+            wallet = InstituteWallet.objects.get(user__user=user)
         else:
             return Response({"error": "Invalid user type."}, status=status.HTTP_400_BAD_REQUEST)
 
