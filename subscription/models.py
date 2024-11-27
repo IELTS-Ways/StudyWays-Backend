@@ -33,7 +33,7 @@ class Subscription(models.Model):
     status = models.CharField(max_length=40, default="Active", choices=status_choices)
     user = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     day_period = models.IntegerField(default=0)
-    price = models.DecimalField(default=0, max_digits=100, decimal_places=2)
+    price = models.DecimalField(max_digits=150, decimal_places=4)
     created_at = models.DateField(auto_now_add=True)
     paid = models.BooleanField(default=False)
     description = models.CharField(max_length=256, null=True, blank=True)
