@@ -41,8 +41,9 @@ class Profile(APIView):
             elif user.user_type == "student":
                 try:
                     student, created = StudentProfile.objects.get_or_create(user=user)
-                    if User.objects.get(id=data["invite_code"]).exists():
-                        inviter = User.objects.get(id=data["invite_code"])
+                    invite_code = data["invite_code"]
+                    if invite_code:
+                        inviter = User.objects.get(id=invite_code)
                         if inviter.user_type == "freelance":
                             freelance_parent = FreelanceProfile.objects.get(user=inviter)
                             student.freelance = freelance_parent
@@ -59,4 +60,3 @@ class Profile(APIView):
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
-
