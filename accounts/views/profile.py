@@ -40,9 +40,9 @@ class Profile(APIView):
                 MarketerPanel.objects.get_or_create(user=user)
             elif user.user_type == "student":
                 student, created = StudentProfile.objects.get_or_create(user=user)
-                invite_code = data.get("invite_code")
-                if invite_code:
-                    inviter = User.objects.get(id=invite_code)
+
+                if User.objects.filter(id=data["invite_code"]).exists():
+                    inviter = User.objects.get(id=data["invite_code"])
                     if inviter.user_type == "freelance":
                         freelance_parent = FreelanceProfile.objects.get(user=inviter)
                         student.freelance = freelance_parent
