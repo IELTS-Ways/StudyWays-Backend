@@ -39,24 +39,20 @@ class Profile(APIView):
             elif user.user_type == "marketer":
                 MarketerPanel.objects.get_or_create(user=user)
             elif user.user_type == "student":
-                try:
-                    student, created = StudentProfile.objects.get_or_create(user=user)
-                    invite_code = data["invite_code"]
-                    if invite_code:
-                        inviter = User.objects.get(id=invite_code)
-                        if inviter.user_type == "freelance":
-                            freelance_parent = FreelanceProfile.objects.get(user=inviter)
-                            student.freelance = freelance_parent
-                        elif inviter.user_type == "institute":
-                            institute_parent = InstituteProfile.objects.get(user=inviter)
-                            student.institute = institute_parent
-                        else:
-                            institute_parent = InstituteProfile.objects.get(id=79)
-                            student.institute = institute_parent
-                    student.save()
-                except Exception as e:
-                    logger.error("Error in creating/updating student profile: %s", str(e))
-                    return Response("Parent not found or somthing wrong. {} ".format(str(e)), status=status.HTTP_406_NOT_ACCEPTABLE)
+                student, created = StudentProfile.objects.get_or_create(user=user)
+                invite_code = data["invite_code"]
+                if invite_code:
+                    inviter = User.objects.get(id=invite_code)
+                    if inviter.user_type == "freelance":
+                        freelance_parent = FreelanceProfile.objects.get(user=inviter)
+                        student.freelance = freelance_parent
+                    elif inviter.user_type == "institute":
+                        institute_parent = InstituteProfile.objects.get(user=inviter)
+                        student.institute = institute_parent
+                    else:
+                        institute_parent = InstituteProfile.objects.get(id=79)
+                        student.institute = institute_parent
+                student.save()
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
