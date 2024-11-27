@@ -5,6 +5,7 @@ from accounts.models.marketer_panel import MarketerWallet
 from accounts.models.freelance_profile import FreelanceWallet
 from accounts.models.student_profile import StudentWallet
 from accounts.models.institute_profile import InstituteWallet
+
 @receiver(post_save, sender=Withdraw)
 def update_wallet_balance(sender, instance, **kwargs):
     if instance.status == 'Paid':

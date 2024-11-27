@@ -80,7 +80,8 @@ class DefaultPrice(SingletonModel):
     def __str__(self):
         return str(self.audio_video_scripter) +" | "+ str(self.memory_mirror)
     
-    
+
+
 class Withdraw(models.Model):
     STATUS_CHOICES = [
         ('New', 'New'),

@@ -229,6 +229,22 @@ class SubPayVerify(APIView):
                 sub.authority = authority
                 sub.ref_id = response['RefID']
                 sub.save()
+
+                # update wallet
+                if User.objects.filter(id=sub.user.user.invite_code).exists():
+                    inviter = User.objects.get(id=sub.user.user.invite_code)
+
+                    if inviter.user_type == 'marketer':
+                        wallet, created = MarketerWallet.objects.get_or_create(user__user=inviter)
+                    elif inviter.user_type == 'student':
+                        wallet, created  = StudentWallet.objects.get_or_create(user__user=inviter)
+                    elif inviter.user_type == 'freelance':
+                        wallet, created  = FreelanceWallet.objects.get_or_create(user__user=inviter)
+                    elif inviter.user_type == 'institute':
+                        wallet, created  = InstituteWallet.objects.get_or_create(user__user=inviter)
+                    wallet.balance += sub.inviter_price
+                    wallet.save()
+
                 return redirect(f'https://app.studyways.ir/dashboard/student/callback?success=ok&payment_id={response["RefID"]}')
                 #return HttpResponse("payment done, RefID={}".format(response['RefID']), content_type='text/plain')
             else:
