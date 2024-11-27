@@ -40,7 +40,7 @@ class Profile(APIView):
                 MarketerPanel.objects.get_or_create(user=user)
             elif user.user_type == "student":
                 student, created = StudentProfile.objects.get_or_create(user=user)
-                invite_code = data["invite_code"]
+                invite_code = data.get("invite_code")
                 if invite_code:
                     inviter = User.objects.get(id=invite_code)
                     if inviter.user_type == "freelance":
