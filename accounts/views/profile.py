@@ -41,7 +41,8 @@ class Profile(APIView):
             elif user.user_type == "student":
                 student, created = StudentProfile.objects.get_or_create(user=user)
 
-                if User.objects.filter(id=data["invite_code"]).exists():
+                #if User.objects.filter(id=data["invite_code"]).exists():
+                if "invite_code" in data and User.objects.filter(id=data["invite_code"]).exists():
                     inviter = User.objects.get(id=data["invite_code"])
                     if inviter.user_type == "freelance":
                         freelance_parent = FreelanceProfile.objects.get(user=inviter)
