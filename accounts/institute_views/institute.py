@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from accounts.serializers import UserSerializer, InstituteSerializer, UserUpdateSerializer
-from accounts.models import User,InstituteProfile
+from accounts.serializers import UserSerializer, InstituteSerializer, UserUpdateSerializer, InstituteWalletSerializer
+from accounts.models import User,InstituteProfile, InstituteWallet
 from accounts.views.permissions.is_institute import IsInstitute
 from accounts.models.institute_profile import InstituteProfile
 from django.http import JsonResponse
@@ -94,3 +94,14 @@ class InstitutePricing(APIView):
             return Response("Institute pricing updated.", status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class InstituteWalletView(APIView):
+    serializer_class = InstituteWalletSerializer
+    permission_classes = [IsInstitute]
+
+    def get(self, *args, **kwargs):
+        institute = InstituteProfile.objects.get(user=self.request.user)
+        wallet,created = InstituteWallet.objects.get_or_create(user=institute)
+        serializer = self.serializer_class(wallet)
+        return Response(serializer.data, status=status.HTTP_200_OK)
