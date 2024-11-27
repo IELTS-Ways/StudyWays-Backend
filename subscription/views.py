@@ -140,10 +140,9 @@ class AddSubPay(APIView):
             sub.apportionment_percentage = appor_percent
             sub.save()
 
-
             data = {
                 "MerchantID": ZP_MERCHANT_ID,
-                "Amount": str(sub.price),
+                "Amount": int(sub.price),
                 "Description": "خریداری اشتراک آنلاین استادی ویز",
                 "Authority": authority,
                 "Phone": student.user.phone_number,
@@ -151,7 +150,7 @@ class AddSubPay(APIView):
                 "OrderID": sub.id,
                 "wages": [{
                     "iban": default_price.shaba_number,
-                    "amount": str(studyways_price),
+                    "amount": int(studyways_price),
                     "description": "تسهیم سود فروش از سرویس"
                 }],
             }
