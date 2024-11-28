@@ -128,14 +128,10 @@ class MarketerTransactions(GenericAPIView):
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
     
     def get(self, request, *args, **kwargs):
-        sender = User.objects.get(id=self.request.user.id)
-        invite_code = sender.invite_code
-        if invite_code:
-            invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
-        else:
-            invited_user = self.queryset.none()
+        invite_code = self.request.user.id
+        invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
         subscriptions_page = self.paginate_queryset(invited_user)
-        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data if subscriptions_page else []
+        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data
         withdraw_requests = Withdraw.objects.filter(user=request.user)
         withdraw_status = request.query_params.get('withdraw_status')
         if withdraw_status:
@@ -176,12 +172,8 @@ class StudentTransactions(GenericAPIView):
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
 
     def get(self, request, *args, **kwargs):
-        sender = User.objects.get(id=self.request.user.id)
-        invite_code = sender.invite_code
-        if invite_code:
-            invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
-        else:
-            invited_user = self.queryset.none()
+        invite_code = self.request.user.id
+        invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
         subscriptions_page = self.paginate_queryset(invited_user)
         subscriptions_data = self.serializer_class(subscriptions_page, many=True).data
                 
