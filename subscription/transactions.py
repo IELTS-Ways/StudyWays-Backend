@@ -39,7 +39,7 @@ class FreelanceTransactions(GenericAPIView):
         
         trans = self.filter_queryset(Subscription.objects.filter(freelance=freelance))
         subscriptions_page = self.paginate_queryset(trans)
-        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data if subscriptions_page else []
+        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data
                 
         withdraw_requests = Withdraw.objects.filter(user=request.user)
         withdraw_status = request.query_params.get('withdraw_status')
@@ -49,15 +49,24 @@ class FreelanceTransactions(GenericAPIView):
         withdraw_requests = withdraw_requests.order_by('-created_at')[:10]
         withdraw_requests_data = WithdrawRequestSerializer(withdraw_requests, many=True).data
 
-        results = {
-            "subscriptions": subscriptions_data,
-            "withdraw_requests": withdraw_requests_data,
-        }
-
         if subscriptions_page:
-            return self.get_paginated_response(results)
+            response_data = self.get_paginated_response({
+                "subscriptions": subscriptions_data,
+                "withdraw_requests": withdraw_requests_data,
+            })
+        else:
+            empty_pagination = self.get_paginated_response([])
+            response_data = Response({
+                "count": empty_pagination.data.get("count", 0),
+                "next": empty_pagination.data.get("next", None),
+                "previous": empty_pagination.data.get("previous", None),
+                "results": {
+                    "subscriptions": [],
+                    "withdraw_requests": withdraw_requests_data,
+                },
+            })
 
-        return Response(results, status=status.HTTP_200_OK)
+        return response_data
 
 
 
@@ -76,7 +85,7 @@ class InstituteTransactions(GenericAPIView):
         
         trans = self.filter_queryset(Subscription.objects.filter(institute=institute))
         subscriptions_page = self.paginate_queryset(trans)
-        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data if subscriptions_page else []
+        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data
                 
         withdraw_requests = Withdraw.objects.filter(user=request.user)
         withdraw_status = request.query_params.get('withdraw_status')
@@ -86,15 +95,24 @@ class InstituteTransactions(GenericAPIView):
         withdraw_requests = withdraw_requests.order_by('-created_at')[:10]
         withdraw_requests_data = WithdrawRequestSerializer(withdraw_requests, many=True).data
 
-        results = {
-            "subscriptions": subscriptions_data,
-            "withdraw_requests": withdraw_requests_data,
-        }
-
         if subscriptions_page:
-            return self.get_paginated_response(results)
+            response_data = self.get_paginated_response({
+                "subscriptions": subscriptions_data,
+                "withdraw_requests": withdraw_requests_data,
+            })
+        else:
+            empty_pagination = self.get_paginated_response([])
+            response_data = Response({
+                "count": empty_pagination.data.get("count", 0),
+                "next": empty_pagination.data.get("next", None),
+                "previous": empty_pagination.data.get("previous", None),
+                "results": {
+                    "subscriptions": [],
+                    "withdraw_requests": withdraw_requests_data,
+                },
+            })
 
-        return Response(results, status=status.HTTP_200_OK)
+        return response_data
 
 
 
@@ -112,10 +130,12 @@ class MarketerTransactions(GenericAPIView):
     def get(self, request, *args, **kwargs):
         sender = User.objects.get(id=self.request.user.id)
         invite_code = sender.invite_code
-        invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        if invite_code:
+            invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        else:
+            invited_user = self.queryset.none()
         subscriptions_page = self.paginate_queryset(invited_user)
         subscriptions_data = self.serializer_class(subscriptions_page, many=True).data if subscriptions_page else []
-                
         withdraw_requests = Withdraw.objects.filter(user=request.user)
         withdraw_status = request.query_params.get('withdraw_status')
         if withdraw_status:
@@ -124,15 +144,24 @@ class MarketerTransactions(GenericAPIView):
         withdraw_requests = withdraw_requests.order_by('-created_at')[:10]
         withdraw_requests_data = WithdrawRequestSerializer(withdraw_requests, many=True).data
 
-        results = {
-            "subscriptions": subscriptions_data,
-            "withdraw_requests": withdraw_requests_data,
-        }
-
         if subscriptions_page:
-            return self.get_paginated_response(results)
+            response_data = self.get_paginated_response({
+                "subscriptions": subscriptions_data,
+                "withdraw_requests": withdraw_requests_data,
+            })
+        else:
+            empty_pagination = self.get_paginated_response([])
+            response_data = Response({
+                "count": empty_pagination.data.get("count", 0),
+                "next": empty_pagination.data.get("next", None),
+                "previous": empty_pagination.data.get("previous", None),
+                "results": {
+                    "subscriptions": [],
+                    "withdraw_requests": withdraw_requests_data,
+                },
+            })
 
-        return Response(results, status=status.HTTP_200_OK)
+        return response_data
     
 
 
@@ -149,9 +178,12 @@ class StudentTransactions(GenericAPIView):
     def get(self, request, *args, **kwargs):
         sender = User.objects.get(id=self.request.user.id)
         invite_code = sender.invite_code
-        invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        if invite_code:
+            invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))
+        else:
+            invited_user = self.queryset.none()
         subscriptions_page = self.paginate_queryset(invited_user)
-        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data if subscriptions_page else []
+        subscriptions_data = self.serializer_class(subscriptions_page, many=True).data
                 
         withdraw_requests = Withdraw.objects.filter(user=request.user)
         withdraw_status = request.query_params.get('withdraw_status')
@@ -161,12 +193,21 @@ class StudentTransactions(GenericAPIView):
         withdraw_requests = withdraw_requests.order_by('-created_at')[:10]
         withdraw_requests_data = WithdrawRequestSerializer(withdraw_requests, many=True).data
 
-        results = {
-            "subscriptions": subscriptions_data,
-            "withdraw_requests": withdraw_requests_data,
-        }
-
         if subscriptions_page:
-            return self.get_paginated_response(results)
+            response_data = self.get_paginated_response({
+                "subscriptions": subscriptions_data,
+                "withdraw_requests": withdraw_requests_data,
+            })
+        else:
+            empty_pagination = self.get_paginated_response([])
+            response_data = Response({
+                "count": empty_pagination.data.get("count", 0),
+                "next": empty_pagination.data.get("next", None),
+                "previous": empty_pagination.data.get("previous", None),
+                "results": {
+                    "subscriptions": [],
+                    "withdraw_requests": withdraw_requests_data,
+                },
+            })
 
-        return Response(results, status=status.HTTP_200_OK)
+        return response_data
