@@ -215,7 +215,7 @@ class SubPayVerify(APIView):
 
         data = {
             "MerchantID": ZP_MERCHANT_ID,
-            "Amount": sub.price,
+            "Amount": int(sub.price),
             "Authority": authority,
         }
         data = json.dumps(data)
