@@ -22,6 +22,7 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 200
 
 
+
 class Search(GenericAPIView):
     permission_classes = [AllowAny]
     pagination_class = CustomPagination
