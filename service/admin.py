@@ -1,5 +1,5 @@
 from django.contrib import admin
-from service.models import Service, MultipleSpellings, HyphenatedAdjectives, FeedbackSystem
+from service.models import Service, MultipleSpellings, HyphenatedAdjectives, FeedbackSystem, ReportSharing
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -27,3 +27,9 @@ class FeedbackSystemAdmin(ImportExportModelAdmin):
     list_display = ('user','star','created_at')
     list_filter = ("star", "user", "created_at")
 admin.site.register(FeedbackSystem, FeedbackSystemAdmin)
+
+
+class ReportShareAdmin(ImportExportModelAdmin):
+    list_display = ('user','created_at')
+    list_filter = ("created_at",)
+admin.site.register(ReportSharing, ReportShareAdmin)
