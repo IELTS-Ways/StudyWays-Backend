@@ -2,6 +2,7 @@ from django.db import models
 from accounts.models import StudentProfile, User
 import datetime
 from file.models import File
+import shortuuid
 
 
 class Service(models.Model):
@@ -73,9 +74,10 @@ class ReportSharing(models.Model):
     link = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def generate_dynamic_link(self):
-        import uuid
-        self.link = uuid.uuid4()
-        
+    def generate_dynamic_link(self, *args, **kwargs):
+        if not self.link:
+            self.link = shortuuid.ShortUUID().random(length=8)
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.user.user} : {self.link}"
+        return f"ReportSharing(link={self.link}, user={self.user})"

@@ -67,7 +67,7 @@ class ReportShareLink(APIView):
             "message": "Access granted.",
             "report": {
                 "report_id": report_sharing.report.id,
-                "report": report_sharing.report.full_result,
+                "result": report_sharing.report.full_result,
             }
         })
 
