@@ -57,3 +57,25 @@ class FeedbackSystem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return str(self.star)+" "+str(self.user)
+    
+    
+    
+class ReportSharing(models.Model):
+    ACCESS_CHOICES = [
+        ('allow_any', 'Allow Any'),
+        ('is_authenticated', 'Is Authenticated'),
+        ('just_parent', 'Just Parent'),
+    ]
+
+    user = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
+    report = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='shared_links')
+    access_type = models.CharField(max_length=50, choices=ACCESS_CHOICES)
+    link = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_dynamic_link(self):
+        import uuid
+        self.link = uuid.uuid4()
+        
+    def __str__(self):
+        return f"{self.user.user} : {self.link}"
