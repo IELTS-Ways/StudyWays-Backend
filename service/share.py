@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 from .models import Service, ReportSharing
 from accounts.models import StudentProfile
 from accounts.views.permissions import IsStudent
+from django.urls import reverse
+import requests
 
 
 
@@ -63,12 +65,11 @@ class ReportShareLink(APIView):
             else:
                 return Response({"error": "No valid parent relationship found."}, status=403)
 
-        return Response({
-            "message": "Access granted.",
-            "report": {
-                "report_id": report_sharing.report.id,
-                "result": report_sharing.report.full_result,
-            }
-        })
+        report_id = report_sharing.report.id
+        target_url = request.build_absolute_uri(reverse('service-correction', kwargs={'id': report_id}))
+        response = requests.get(target_url)
+
+        return Response(response.json(), status=response.status_code)
+
 
 

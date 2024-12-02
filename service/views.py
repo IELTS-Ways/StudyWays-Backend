@@ -132,7 +132,7 @@ class ServicesCorrectionAI(APIView):
 
 class ServicesCorrection(APIView):
     serializer_class = ServiceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, *args, **kwargs):
         try:
