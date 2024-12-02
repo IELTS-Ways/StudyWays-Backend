@@ -7,7 +7,6 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from accounts import models as user_models
 
-
 class User(AbstractUser):
 
     phone_regex = RegexValidator(
