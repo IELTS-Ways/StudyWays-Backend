@@ -347,5 +347,5 @@ ZARRINPAL_MERCHANT_ID = "00000000-0000-0000-0000-000000000000"
 ZP_API_REQUEST = "https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json"
 ZP_API_VERIFY = "https://www.zarinpal.com/pg/rest/WebGate/PaymentVerification.json"
 ZP_API_STARTPAY = "https://www.zarinpal.com/pg/StartPay/"
-ZARIN_CALL_BACK = 'https://api.studyways.ir/subscription/BOGO-verify/'
+ZARIN_CALL_BACK = 'https://api.studyways.ir/subscription/pay-verify/'
 # END ZARRINPAL CONFIGURATION
