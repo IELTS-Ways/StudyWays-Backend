@@ -253,6 +253,85 @@ class SubPayVerify(APIView):
 
 
 
+class BOGOVerify(APIView):
+    @transaction.atomic
+    def get(self, *args, **kwargs):
+        status = self.request.query_params.get("Status")
+        authority = self.request.query_params.get("Authority")
+        id = self.kwargs.get("id")
+        #student = StudentProfile.objects.get(user=self.request.user)
+
+        if not authority or status != "OK":
+            return redirect('https://app.studyways.ir/dashboard/student/callback?success=notok')
+            #return HttpResponse("payment faild...", content_type='text/plain')
+
+        try:
+            sub = Subscription.objects.get(id=id)
+        except Subscription.DoesNotExist:
+            return bad_request("Subscription does not exist...")
+
+        if sub.user.parent_type() == "Institute":
+            ZP_MERCHANT_ID = sub.user.institute.ZP_MERCHANT_ID
+        else:
+            default_price = DefaultPrice.objects.all().last()
+            ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
+
+        data = {
+            "MerchantID": ZP_MERCHANT_ID,
+            "Amount": int(sub.price),
+            "Authority": authority,
+        }
+        data = json.dumps(data)
+        headers = {'content-type': 'application/json', 'content-length': str(len(data))}
+        response = requests.post(settings.ZP_API_VERIFY, data=data, headers=headers)
+
+        if response.status_code == 200:
+            response = response.json()
+            if response['Status'] == 100:
+                sub.paid = True
+                sub.authority = authority
+                sub.ref_id = response['RefID']
+                sub.save()
+                
+                type = self.get_type(sub.type)
+                if type:
+                    complementary_sub = Subscription.objects.create(
+                        user=sub.user,
+                        type=type,
+                        price=0, 
+                        authority=authority, 
+                        ref_id=response['RefID'],  
+                        paid=True,
+                    )
+                    complementary_sub.save()
+
+                # update wallet
+                if User.objects.filter(id=sub.user.user.invite_code).exists():
+                    inviter = User.objects.get(id=sub.user.user.invite_code)
+
+                    if inviter.user_type == 'marketer':
+                        wallet, created = MarketerWallet.objects.get_or_create(user__user=inviter)
+                    elif inviter.user_type == 'student':
+                        wallet, created  = StudentWallet.objects.get_or_create(user__user=inviter)
+                    elif inviter.user_type == 'freelance':
+                        wallet, created  = FreelanceWallet.objects.get_or_create(user__user=inviter)
+                    elif inviter.user_type == 'institute':
+                        wallet, created  = InstituteWallet.objects.get_or_create(user__user=inviter)
+                    wallet.balance += sub.inviter_price
+                    wallet.save()
+                return redirect(f'https://app.studyways.ir/dashboard/student/callback?success=ok&payment_id={response["RefID"]}')
+                #return HttpResponse("payment done, RefID={}".format(response['RefID']), content_type='text/plain')
+            else:
+                return SuccessResponse(data={'status': False, 'details': 'Subscription already paid' })
+        return SuccessResponse(data=response.content)
+    
+    def get_type(self, sub_type):
+        if sub_type == "Audio-Video-Scripter":
+            return "Memory-Mirror"
+        elif sub_type == "Memory-Mirror":
+            return "Audio-Video-Scripter"
+        return None
+
 
 class Membership(APIView):
     serializer_class = SubscriptionSerializer
