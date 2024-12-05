@@ -402,8 +402,10 @@ class BOGOVerify(APIView):
                     complementary_sub = Subscription.objects.create(
                         user=sub.user,
                         type=type,
+                        status="Active",
                         price=0, 
                         authority=authority, 
+                        day_period=sub.day_period,
                         ref_id=response['RefID'],  
                         paid=True,
                     )
