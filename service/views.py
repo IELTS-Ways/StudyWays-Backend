@@ -171,7 +171,12 @@ class ServicesCorrection(APIView):
                 highlight = " "
 
                 for line in diff:
-                    if line.startswith('+ '):
+                    if line.startswith('- '):
+                        missing_word = line[2:]
+                        missing_words.append(missing_word.strip())
+                        highlight += f"<span style='color:#dc0202e6'> <b>{missing_word.strip()}</b> </span> "
+
+                    elif line.startswith('+ '):
                         new_word = line[2:]
                         if new_word.strip() not in spell:
                         #if spell.unknown(new_word.strip()):
@@ -184,14 +189,11 @@ class ServicesCorrection(APIView):
                             new_words.append(new_word.strip())
                             highlight += f"<span style='color:#414547'> ( <del>{new_word.strip()}</del> ) </span> "
 
-                    elif line.startswith('- '):
-                        missing_word = line[2:]
-                        missing_words.append(missing_word.strip())
-                        highlight += f"<span style='color:#dc0202e6'> <b>{missing_word.strip()}</b> </span> "
                     else:
                         word = line[2:]
                         if word.strip() not in {"^", "--", "-"}:
                             highlight += f"<span style='color:black'>{word}</span> "
+
 
                 differences = {'similarity_percentage':similarity_percentage,
                                'missing_words': missing_words,
