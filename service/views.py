@@ -190,7 +190,8 @@ class ServicesCorrection(APIView):
                         highlight += f"<span style='color:#dc0202e6'> <b>{missing_word.strip()}</b> </span> "
                     else:
                         word = line[2:]
-                        highlight += f"<span style='color:black'>{word.strip()}</span> "
+                        if word.strip() not in {"^", "--", "-"}:
+                            highlight += f"<span style='color:black'>{word}</span> "
 
                 differences = {'similarity_percentage':similarity_percentage,
                                'missing_words': missing_words,
