@@ -16,6 +16,8 @@ import string
 from termcolor import colored
 from django.http import JsonResponse
 from openai import OpenAI
+from difflib import SequenceMatcher, Differ
+from django.shortcuts import get_object_or_404
 
 
 class FeedbackView(APIView):
@@ -314,5 +316,192 @@ class ServicesCorrection(APIView):
         except Exception as e:
             return Response(f"service not found or something went wrong, try again. Error:{e}", status=status.HTTP_400_BAD_REQUEST)
 
+
+
+class ServicesCorrectionV2(APIView):
+    serializer_class = ServiceSerializer
+    permission_classes = [AllowAny]
+
+    def clean_text(self, text, characters_to_remove):
+        return re.sub(f"[{re.escape(characters_to_remove)}]", "", text.replace('.', '. '))
+
+    def find_multiple_spellings(self, text, spellings):
+        words = text.split()
+        return [word for word in words if any(word.lower() in variants for variants in spellings.values())]
+
+    def find_hyphenated_adjectives(self, text, adjectives):
+        return [word for word in text.split() if any(adj in word.lower() for adj in adjectives)]
+    
+    def compare_texts(self, original, revised):
+        differ = Differ()
+        
+        seq_match = SequenceMatcher(None, original, revised)
+        ratio = seq_match.ratio()
+        similarity_percentage = ratio*100
+        
+        original_words = original.split()
+        revised_words = revised.split()
+
+        diff_result = list(differ.compare(original_words, revised_words))
+
+        highlight_parts = []
+        missing_words = []
+        misspelled_words = []
+        misspelled_words_correct = []
+        
+        for diff in diff_result:
+            if diff.startswith('- '):  
+                missing_word = diff[2:]
+                missing_words.append(missing_word.strip())
+                highlight_parts.append(f"<span style='color:#3a62c6'>(<b>{missing_word}</b>)</span>")
+
+            elif diff.startswith('+ '): 
+                extra_word = diff[2:]
+                highlight_parts.append(f"<span style='color:#d34040'>{extra_word}</span>")
+                
+
+            elif diff.startswith('  '): 
+                unchanged_word = diff[2:]
+                highlight_parts.append(unchanged_word)
+
+        final_parts = []
+        skip_next = False
+        for idx, part in enumerate(highlight_parts):
+            if skip_next:
+                skip_next = False
+                continue
+
+            if (
+                "color:#3a62c6" in part
+                and idx + 1 < len(highlight_parts)
+                and "color:#d34040" in highlight_parts[idx + 1]
+            ):
+                blue_word = part.split("(<b>")[1].split("</b>)")[0]
+                red_word = highlight_parts[idx + 1].split(">", 1)[1].split("<")[0]
+                misspelled_words.append(red_word)
+                misspelled_words_correct.append(blue_word)
+                final_parts.append(
+                    f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span> <span style='color:#d34040'>{blue_word}</span>"
+                )
+                skip_next = True
+            else:
+                final_parts.append(part)
+
+        corrected_parts = []
+        for idx, part in enumerate(final_parts):
+            if (
+                "color:#d34040" in part
+                and idx + 1 < len(final_parts)
+                and "color:#3a62c6" in final_parts[idx + 1]
+            ):
+                red_word = part.split(">", 1)[1].split("<")[0]
+                blue_word = final_parts[idx + 1].split("(<b>")[1].split("</b>)")[0]
+                print(blue_word)
+                corrected_parts.append(
+                    f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span> <span style='color:#d34040'>{blue_word}</span>"
+                )
+                skip_next = True
+            else:
+                corrected_parts.append(part)
+
+        highlight = " ".join(corrected_parts)
+
+        return {
+            'similarity_percentage':similarity_percentage,
+            'missing_words': missing_words,
+            'misspelled_words': misspelled_words,
+            'misspelled_words_correct':misspelled_words_correct,
+            'highlight': highlight.strip()
+        }
+
+
+    def compare_punctuation(self, user_text, original_text):
+        characters_to_remove = "$%@*#/"
+        original_text = re.sub(f"[{re.escape(characters_to_remove)}]", "", original_text)
+        user_text = re.sub(f"[{re.escape(characters_to_remove)}]", "", user_text)
+
+        punctuation_marks = ",!#$%@*.?-—;:'"
+        highlighted_text = ""
+        matcher = SequenceMatcher(None, original_text, user_text, autojunk=False)
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == 'equal':
+                for char in user_text[j1:j2]:
+                    if char.isupper():
+                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{char}</span>'
+                    elif char in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{char}</span>'
+                    else:
+                        highlighted_text += char
+            elif tag == 'replace' or tag == 'delete':
+                for i in range(i1, i2):
+                    if original_text[i].isupper():
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[i]}</mark>'
+                    elif original_text[i] in punctuation_marks:
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[i]}</mark>'
+                for j in range(j1, j2):
+                    if user_text[j].isupper():
+                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[j]}</span>'
+                    elif user_text[j] in punctuation_marks:
+                        highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
+            elif tag == 'insert':
+                for j in range(j1, j2):
+                    if user_text[j].isupper():
+                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[j]}</span>'
+                    elif user_text[j] in punctuation_marks:
+                        highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
+
+        return highlighted_text
+
+    def get(self, request, *args, **kwargs):
+        try:
+            service = get_object_or_404(Service, id=self.kwargs["id"])
+            serializer = self.serializer_class(service)
+
+            characters_to_remove = ",!#$%@*.?/"
+            service_file_script = self.clean_text(service.file.script, characters_to_remove)
+            service_text = self.clean_text(service.text, characters_to_remove)
+            
+            print(service_file_script)
+
+            multiple_spellings = {item.US: [item.US, item.UK] for item in MultipleSpellings.objects.all()}
+            hyphenated_adjectives = list(HyphenatedAdjectives.objects.values_list('US', flat=True))
+
+            differences = self.compare_texts(service_file_script, service_text)
+            punctuation_result = self.compare_punctuation(service.text, service.file.script)
+
+            multiple_spellings_found = self.find_multiple_spellings(service_text, multiple_spellings)
+            hyphenated_adjectives_found = self.find_hyphenated_adjectives(service_file_script, hyphenated_adjectives)
+
+            multiple_spellings_full = {
+                "UK": [item.UK for item in MultipleSpellings.objects.filter(US__in=multiple_spellings_found)],
+                "US": [item.US for item in MultipleSpellings.objects.filter(UK__in=multiple_spellings_found)]
+            }
+
+            missing_words_final = [
+                word for word in differences['missing_words']
+                if word.lower() not in (w.lower() for w in differences['misspelled_words'])
+            ]
+
+            correction_data = {
+                "file_user": StudentProfileSerializer(service.user).data,
+                "file_data": FileSerializer(service.file).data,
+                "file_script": service.file.script,
+                "student_text": service_text,
+                "differences": differences,
+                "missing_words_final": missing_words_final,
+                "multiple_spellings": multiple_spellings_found,
+                "multiple_spellings_full": multiple_spellings_full,
+                "hyphenated_adjectives": hyphenated_adjectives_found,
+                "punctuation": punctuation_result
+            }
+
+            data = {"service_data": serializer.data, "correction_data": correction_data}
+            service.full_result = data
+            service.save()
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"Service not found or something went wrong. Error: {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
