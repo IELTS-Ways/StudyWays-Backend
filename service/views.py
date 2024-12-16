@@ -337,7 +337,7 @@ class ServicesCorrectionV2(APIView):
         
         seq_match = SequenceMatcher(None, original, revised)
         ratio = seq_match.ratio()
-        similarity_percentage = ratio*100
+        similarity_percentage = ratio * 100
         
         original_words = original.split()
         revised_words = revised.split()
@@ -348,6 +348,17 @@ class ServicesCorrectionV2(APIView):
         missing_words = []
         misspelled_words = []
         misspelled_words_correct = []
+        
+        irrelevant_words = set([
+        "a", "an", "the",  # Articles
+        "I", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",  # Pronouns
+        "in", "on", "at", "by", "to", "from", "with", "about", "for", "of", "after", "before",  # Prepositions
+        "and", "but", "or", "so", "yet", "nor", "for",  # Conjunctions
+        "is", "are", "am", "was", "were", "be", "being", "been", "do", "does", "did", "have", "has", "had", 
+        "will", "would", "shall", "should", "can", "could", "may", "might", "must",  # Auxiliary Verbs
+        "very", "too", "also", "just", "now", "then", "here", "there", "when", "where", "why", "how",  # Adverbs
+        "this", "that", "these", "those", "some", "any", "each", "every", "no", "many", "few", "all", "both", "half"  # Determiners
+        ])
         
         for diff in diff_result:
             if diff.startswith('- '):  
@@ -379,7 +390,8 @@ class ServicesCorrectionV2(APIView):
                 blue_word = part.split("(<b>")[1].split("</b>)")[0]
                 red_word = highlight_parts[idx + 1].split(">", 1)[1].split("<")[0]
                 misspelled_words.append(red_word)
-                misspelled_words_correct.append(blue_word)
+                if blue_word.lower() not in irrelevant_words:
+                    misspelled_words_correct.append(blue_word)
                 final_parts.append(
                     f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span> <span style='color:#d34040'>{blue_word}</span>"
                 )
@@ -396,7 +408,6 @@ class ServicesCorrectionV2(APIView):
             ):
                 red_word = part.split(">", 1)[1].split("<")[0]
                 blue_word = final_parts[idx + 1].split("(<b>")[1].split("</b>)")[0]
-                print(blue_word)
                 corrected_parts.append(
                     f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span> <span style='color:#d34040'>{blue_word}</span>"
                 )
@@ -404,13 +415,23 @@ class ServicesCorrectionV2(APIView):
             else:
                 corrected_parts.append(part)
 
-        highlight = " ".join(corrected_parts)
+        final_highlight = []
+        for part in corrected_parts:
+            if "color:#d34040" in part and "color:#868585" not in part:
+                red_word = part.split(">", 1)[1].split("<")[0]
+                final_highlight.append(
+                    f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span>"
+                )
+            else:
+                final_highlight.append(part)
+
+        highlight = " ".join(final_highlight)
 
         return {
-            'similarity_percentage':similarity_percentage,
+            'similarity_percentage': similarity_percentage,
             'missing_words': missing_words,
             'misspelled_words': misspelled_words,
-            'misspelled_words_correct':misspelled_words_correct,
+            'misspelled_words_correct': misspelled_words_correct,
             'highlight': highlight.strip()
         }
 
