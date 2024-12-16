@@ -393,7 +393,7 @@ class ServicesCorrectionV2(APIView):
                 if blue_word.lower() not in irrelevant_words:
                     misspelled_words_correct.append(blue_word)
                 final_parts.append(
-                    f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span> <span style='color:#d34040'>{blue_word}</span>"
+                    f"<span style='color:#868585'>(<b>{red_word}</b>)</span> <span style='color:#d34040'>{blue_word}</span>"
                 )
                 skip_next = True
             else:
@@ -420,7 +420,7 @@ class ServicesCorrectionV2(APIView):
             if "color:#d34040" in part and "color:#868585" not in part:
                 red_word = part.split(">", 1)[1].split("<")[0]
                 final_highlight.append(
-                    f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span>"
+                    f"<span style='color:#9940d3;text-decoration:line-through'>({red_word})</span>"
                 )
             else:
                 final_highlight.append(part)
@@ -443,34 +443,40 @@ class ServicesCorrectionV2(APIView):
 
         punctuation_marks = ",!#$%@*.?-—;:'"
         highlighted_text = ""
-        matcher = SequenceMatcher(None, original_text, user_text, autojunk=False)
+        matcher = SequenceMatcher(None, user_text, original_text, autojunk=False)
 
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
             if tag == 'equal':
-                for char in user_text[j1:j2]:
+                for char in user_text[i1:i2]:
                     if char.isupper():
                         highlighted_text += f'<span style="color:orange; font-weight:bold;">{char}</span>'
                     elif char in punctuation_marks:
                         highlighted_text += f'<span style="color:blue;">{char}</span>'
                     else:
                         highlighted_text += char
-            elif tag == 'replace' or tag == 'delete':
+            elif tag == 'replace':
                 for i in range(i1, i2):
-                    if original_text[i].isupper():
-                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[i]}</mark>'
-                    elif original_text[i] in punctuation_marks:
-                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[i]}</mark>'
+                    if user_text[i].isupper():
+                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[i]}</span>'
+                    elif user_text[i] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{user_text[i]}</span>'
                 for j in range(j1, j2):
-                    if user_text[j].isupper():
-                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[j]}</span>'
-                    elif user_text[j] in punctuation_marks:
-                        highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
+                    if original_text[j].isupper():
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
+                    elif original_text[j] in punctuation_marks:
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
+            elif tag == 'delete':
+                for j in range(j1, j2):
+                    if original_text[j].isupper():
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
+                    elif original_text[j] in punctuation_marks:
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
             elif tag == 'insert':
-                for j in range(j1, j2):
-                    if user_text[j].isupper():
-                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[j]}</span>'
-                    elif user_text[j] in punctuation_marks:
-                        highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
+                for i in range(i1, i2):
+                    if user_text[i].isupper():
+                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[i]}</span>'
+                    elif user_text[i] in punctuation_marks:
+                        highlighted_text += f'<span style="color:green;">{user_text[i]}</span>'
 
         return highlighted_text
 
