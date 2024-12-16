@@ -154,7 +154,10 @@ class File(models.Model):
         ("News", "News"),
         ("Course Books", "Course Books"),
         ("Periodicals", "Periodicals"),
-        ("Story Book", "Story Book"),)
+        ("Story Book", "Story Book"),
+        ("IELTS Task 1 (ACAD)", "IELTS Task 1 (ACAD)"),
+        ("IELTS Task 1 (GT)", "IELTS Task 1 (GT)"),
+        ("IELTS Task 2", "IELTS Task 2"),)
 
     cefr_choices = (
         ("Beginner (Easy Start/Starter)", "Beginner (Easy Start/Starter)"),
