@@ -73,5 +73,3 @@ class ReportShareLink(APIView):
 
         return Response(response.json(), status=response.status_code)
 
-
-

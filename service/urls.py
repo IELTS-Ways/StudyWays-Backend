@@ -3,6 +3,7 @@ from service.views import Services, ServicesItem, ServicesCorrection, FeedbackVi
 from service.history import StudentHistory
 from .share import ReportShareLink
 
+
 urlpatterns = [
     path("services", Services.as_view(), name="services"),
     path("service-item/<int:id>/",ServicesItem.as_view(),name="service-item"),
