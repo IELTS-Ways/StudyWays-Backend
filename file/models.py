@@ -191,6 +191,7 @@ class File(models.Model):
     article_title = models.CharField(max_length=100, blank=True, null=True)
     unit_title = models.CharField(max_length=100, blank=True, null=True)
     file = models.URLField(blank=True,null=True)
+    task2_image = models.ImageField(upload_to="task2_image",blank=True,null=True)
     script = models.TextField(max_length=10000,blank=True, null=True)
     book_cover_photo_url = models.CharField(max_length=300,blank=True,null=True,default=default_book_cover_photo_url)
 
