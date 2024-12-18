@@ -10,7 +10,6 @@ class ServiceAdmin(ImportExportModelAdmin):
 admin.site.register(Service, ServiceAdmin)
 
 
-
 class MultipleSpellingsAdmin(ImportExportModelAdmin):
     list_display = ('id','UK', 'US')
     search_fields = ['UK','US']
