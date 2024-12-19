@@ -335,14 +335,15 @@ class ServicesCorrectionV2(APIView):
     def compare_texts(self, original, revised):
         differ = Differ()
         
-        seq_match = SequenceMatcher(None, original, revised)
+        seq_match = SequenceMatcher(None, original.lower(), revised.lower())
         ratio = seq_match.ratio()
         similarity_percentage = ratio * 100
         
         original_words = original.split()
         revised_words = revised.split()
-
-        diff_result = list(differ.compare(original_words, revised_words))
+        
+        diff_result = list(differ.compare([word.lower() for word in original_words], 
+                                        [word.lower() for word in revised_words]))
 
         highlight_parts = []
         missing_words = []
@@ -369,7 +370,6 @@ class ServicesCorrectionV2(APIView):
             elif diff.startswith('+ '): 
                 extra_word = diff[2:]
                 highlight_parts.append(f"<span style='color:#d34040'>{extra_word}</span>")
-                
 
             elif diff.startswith('  '): 
                 unchanged_word = diff[2:]
@@ -377,15 +377,18 @@ class ServicesCorrectionV2(APIView):
 
         final_parts = []
         skip_next = False
+        swapped_indices = set()
+        
         for idx, part in enumerate(highlight_parts):
             if skip_next:
                 skip_next = False
                 continue
-
+            
             if (
                 "color:#3a62c6" in part
                 and idx + 1 < len(highlight_parts)
                 and "color:#d34040" in highlight_parts[idx + 1]
+                and idx not in swapped_indices
             ):
                 blue_word = part.split("(<b>")[1].split("</b>)")[0]
                 red_word = highlight_parts[idx + 1].split(">", 1)[1].split("<")[0]
@@ -395,28 +398,13 @@ class ServicesCorrectionV2(APIView):
                 final_parts.append(
                     f"<span style='color:#868585'>(<b>{red_word}</b>)</span> <span style='color:#d34040'>{blue_word}</span>"
                 )
+                swapped_indices.add(idx + 1)  # Add the index of the red word
                 skip_next = True
             else:
                 final_parts.append(part)
 
-        corrected_parts = []
-        for idx, part in enumerate(final_parts):
-            if (
-                "color:#d34040" in part
-                and idx + 1 < len(final_parts)
-                and "color:#3a62c6" in final_parts[idx + 1]
-            ):
-                red_word = part.split(">", 1)[1].split("<")[0]
-                blue_word = final_parts[idx + 1].split("(<b>")[1].split("</b>)")[0]
-                corrected_parts.append(
-                    f"<span style='color:#868585;text-decoration:line-through'>({red_word})</span> <span style='color:#d34040'>{blue_word}</span>"
-                )
-                skip_next = True
-            else:
-                corrected_parts.append(part)
-
         final_highlight = []
-        for part in corrected_parts:
+        for part in final_parts:
             if "color:#d34040" in part and "color:#868585" not in part:
                 red_word = part.split(">", 1)[1].split("<")[0]
                 final_highlight.append(
@@ -443,40 +431,27 @@ class ServicesCorrectionV2(APIView):
 
         punctuation_marks = ",!#$%@*.?-—;:'"
         highlighted_text = ""
-        matcher = SequenceMatcher(None, user_text, original_text, autojunk=False)
+        matcher = SequenceMatcher(None, original_text, user_text, autojunk=False)
+
+        min_length = min(len(user_text), len(original_text))
 
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
             if tag == 'equal':
-                for char in user_text[i1:i2]:
-                    if char.isupper():
-                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{char}</span>'
-                    elif char in punctuation_marks:
-                        highlighted_text += f'<span style="color:blue;">{char}</span>'
-                    else:
-                        highlighted_text += char
-            elif tag == 'replace':
-                for i in range(i1, i2):
-                    if user_text[i].isupper():
-                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[i]}</span>'
-                    elif user_text[i] in punctuation_marks:
-                        highlighted_text += f'<span style="color:blue;">{user_text[i]}</span>'
-                for j in range(j1, j2):
-                    if original_text[j].isupper():
-                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
-                    elif original_text[j] in punctuation_marks:
-                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
-            elif tag == 'delete':
-                for j in range(j1, j2):
-                    if original_text[j].isupper():
-                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
-                    elif original_text[j] in punctuation_marks:
-                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[j]}</mark>'
+                for char in user_text[j1:j2]:
+                    highlighted_text += char
+            elif tag == 'replace' or tag == 'delete':
+                for i in range(i1, min(i2, min_length)):
+                    if original_text[i].isupper():
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[i]}</mark>'
+                    elif original_text[i] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{original_text[i]}</span>'
+                for j in range(j1, min(j2, min_length)):
+                    if user_text[j] in punctuation_marks:
+                        highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
             elif tag == 'insert':
-                for i in range(i1, i2):
-                    if user_text[i].isupper():
-                        highlighted_text += f'<span style="color:orange; font-weight:bold;">{user_text[i]}</span>'
-                    elif user_text[i] in punctuation_marks:
-                        highlighted_text += f'<span style="color:green;">{user_text[i]}</span>'
+                for j in range(j1, j2):
+                    if user_text[j] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{user_text[j]}</span>'
 
         return highlighted_text
 
@@ -489,8 +464,6 @@ class ServicesCorrectionV2(APIView):
             service_file_script = self.clean_text(service.file.script, characters_to_remove)
             service_text = self.clean_text(service.text, characters_to_remove)
             
-            print(service_file_script)
-
             multiple_spellings = {item.US: [item.US, item.UK] for item in MultipleSpellings.objects.all()}
             hyphenated_adjectives = list(HyphenatedAdjectives.objects.values_list('US', flat=True))
 
