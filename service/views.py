@@ -333,57 +333,116 @@ class ServicesCorrectionV2(APIView):
         return [word for word in text.split() if any(adj in word.lower() for adj in adjectives)]
     
     def compare_texts(self, original, revised):
+        substitutions = {
+            "i'm": "i am",
+            "you're": "you are",
+            "he's": ["he is", "he has"],
+            "she's": ["she is", "she has"],
+            "it's": ["it is", "it has"],
+            "we're": "we are",
+            "they're": "they are",
+            "can't": "cannot",
+            "don't": "do not",
+            "didn't": "did not",
+            "won't": "will not",
+            "haven't": "have not",
+            "hadn't": "had not",
+            "couldn't": "could not",
+            "shouldn't": "should not",
+            "wouldn't": "would not",
+            "doesn't": "does not",
+            "isn't": "is not",
+            "aren't": "are not",
+            "wasn't": "was not",
+            "weren't": "were not",
+            "hasn't": "has not",
+            "you'd": ["you had", "you would"],
+            "he'd": ["he had", "he would"],
+            "she'd": ["she had", "she would"],
+            "it'd": ["it had", "it would"],
+            "we'd": ["we had", "we would"],
+            "they'd": ["they had", "they would"],
+            "that's": ["that is", "that has"],
+            "there's": ["there is", "there has"],
+            "who's": ["who is", "who has"],
+            "what's": ["what is", "what has"],
+            "where's": ["where is", "where has"],
+            "when's": ["when is", "when has"],
+            "why's": ["why is", "why has"],
+            "here's": "here is",
+            # other
+        }
+
+        def normalize_text(text):
+            words = text.split()
+            normalized_words = []
+            for i, word in enumerate(words):
+                if word in substitutions:
+                    value = substitutions[word]
+                    if isinstance(value, list):
+                        previous_word = words[i-1] if i > 0 else ''
+                        next_word = words[i+1] if i < len(words)-1 else ''
+                        if previous_word in ["he", "she", "it", "who", "what", "where", "when", "why", "that", "there"]:
+                            normalized_words.append(value[0])
+                        elif next_word in ["been", "gone"]:
+                            normalized_words.append(value[1])
+                        else:
+                            normalized_words.append(value[0])
+                    else:
+                        normalized_words.append(value)
+                else:
+                    normalized_words.append(word)
+            return " ".join(normalized_words)
+
+        original = normalize_text(original.lower())
+        revised = normalize_text(revised.lower())
+
         differ = Differ()
-        
-        seq_match = SequenceMatcher(None, original.lower(), revised.lower())
+        seq_match = SequenceMatcher(None, original, revised)
         ratio = seq_match.ratio()
         similarity_percentage = ratio * 100
-        
+
         original_words = original.split()
         revised_words = revised.split()
-        
-        diff_result = list(differ.compare([word.lower() for word in original_words], 
-                                        [word.lower() for word in revised_words]))
+
+        diff_result = list(differ.compare(original_words, revised_words))
 
         highlight_parts = []
         missing_words = []
         misspelled_words = []
         misspelled_words_correct = []
-        
+
         irrelevant_words = set([
-        "a", "an", "the",  # Articles
-        "I", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",  # Pronouns
-        "in", "on", "at", "by", "to", "from", "with", "about", "for", "of", "after", "before",  # Prepositions
-        "and", "but", "or", "so", "yet", "nor", "for",  # Conjunctions
-        "is", "are", "am", "was", "were", "be", "being", "been", "do", "does", "did", "have", "has", "had", 
-        "will", "would", "shall", "should", "can", "could", "may", "might", "must",  # Auxiliary Verbs
-        "very", "too", "also", "just", "now", "then", "here", "there", "when", "where", "why", "how",  # Adverbs
-        "this", "that", "these", "those", "some", "any", "each", "every", "no", "many", "few", "all", "both", "half"  # Determiners
+            "a", "an", "the", "i", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
+            "in", "on", "at", "by", "to", "from", "with", "about", "for", "of", "after", "before",
+            "and", "but", "or", "so", "yet", "nor", "for",
+            "is", "are", "am", "was", "were", "be", "being", "been", "do", "does", "did", "have", "has", "had",
+            "will", "would", "shall", "should", "can", "could", "may", "might", "must",
+            "very", "too", "also", "just", "now", "then", "here", "there", "when", "where", "why", "how",
+            "this", "that", "these", "those", "some", "any", "each", "every", "no", "many", "few", "all", "both", "half"
         ])
-        
+
         for diff in diff_result:
-            if diff.startswith('- '):  
+            if diff.startswith('- '):
                 missing_word = diff[2:]
                 missing_words.append(missing_word.strip())
                 highlight_parts.append(f"<span style='color:#3a62c6'>(<b>{missing_word}</b>)</span>")
-
-            elif diff.startswith('+ '): 
+            elif diff.startswith('+ '):
                 extra_word = diff[2:]
                 highlight_parts.append(f"<span style='color:#d34040'>{extra_word}</span>")
-
-            elif diff.startswith('  '): 
+            elif diff.startswith('  '):
                 unchanged_word = diff[2:]
                 highlight_parts.append(unchanged_word)
 
         final_parts = []
         skip_next = False
         swapped_indices = set()
-        
+
         for idx, part in enumerate(highlight_parts):
             if skip_next:
                 skip_next = False
                 continue
-            
+
             if (
                 "color:#3a62c6" in part
                 and idx + 1 < len(highlight_parts)
@@ -398,7 +457,7 @@ class ServicesCorrectionV2(APIView):
                 final_parts.append(
                     f"<span style='color:#868585'>(<b>{red_word}</b>)</span> <span style='color:#d34040'>{blue_word}</span>"
                 )
-                swapped_indices.add(idx + 1)  # Add the index of the red word
+                swapped_indices.add(idx + 1)
                 skip_next = True
             else:
                 final_parts.append(part)
