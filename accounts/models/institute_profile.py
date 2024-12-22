@@ -32,6 +32,8 @@ class InstituteProfile(models.Model):
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
     memory_mirror_price_each_day = models.IntegerField(blank=True, null=True)
     audio_scripter_price_each_day = models.IntegerField(blank=True, null=True)
+    teaching_positions = models.JSONField(null=True, blank=True)
+    teaching_qualifications  = models.JSONField(null=True, blank=True)
     #wallet = models.IntegerField(default=0)
 
     def __str__(self):

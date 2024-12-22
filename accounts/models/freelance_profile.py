@@ -30,6 +30,8 @@ class FreelanceProfile(models.Model):
     secondary_color = models.CharField(max_length=100, blank=True, null=True)
     cart_number = models.BigIntegerField(null=True, blank=True)
     shaba = models.CharField(max_length=100, null=True, blank=True)
+    teaching_positions = models.JSONField(null=True, blank=True)
+    teaching_qualifications  = models.JSONField(null=True, blank=True)
     #memory_mirror_price = models.IntegerField(blank=True, null=True)
     #audio_scripter_price = models.IntegerField(blank=True, null=True)
     #wallet = models.IntegerField(default=0)
