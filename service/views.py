@@ -413,7 +413,7 @@ class ServicesCorrectionV2(APIView):
         misspelled_words_correct = []
 
         irrelevant_words = set([
-            "a", "an", "the", "i", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
+            "a", "an", "the", "i", "you", "your", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
             "in", "on", "at", "by", "to", "from", "with", "about", "for", "of", "after", "before",
             "and", "but", "or", "so", "yet", "nor", "for",
             "is", "are", "am", "was", "were", "be", "being", "been", "do", "does", "did", "have", "has", "had",
@@ -492,27 +492,44 @@ class ServicesCorrectionV2(APIView):
         highlighted_text = ""
         matcher = SequenceMatcher(None, original_text, user_text, autojunk=False)
 
-        min_length = min(len(user_text), len(original_text))
-
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            # Break the loop if we reach the end of the user's text
+            if j1 >= len(user_text):
+                break
+
             if tag == 'equal':
-                for char in user_text[j1:j2]:
-                    highlighted_text += char
-            elif tag == 'replace' or tag == 'delete':
-                for i in range(i1, min(i2, min_length)):
-                    if original_text[i].isupper():
+                highlighted_text += user_text[j1:j2]
+            elif tag == 'replace':
+                for i, j in zip(range(i1, i2), range(j1, j2)):
+                    if j >= len(user_text):  # Stop processing if beyond user text
+                        break
+                    if original_text[i].isupper() and not user_text[j].isupper():
                         highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[i]}</mark>'
-                    elif original_text[i] in punctuation_marks:
+                    elif not original_text[i].isupper() and user_text[j].isupper():
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{original_text[i]}</mark>'
+                    elif user_text[j] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{user_text[j]}</span>'
+                    else:
+                        highlighted_text += user_text[j]
+            elif tag == 'delete':
+                for i in range(i1, i2):
+                    if i >= len(user_text):  # Stop processing if beyond user text
+                        break
+                    if original_text[i] in punctuation_marks:
                         highlighted_text += f'<span style="color:blue;">{original_text[i]}</span>'
-                for j in range(j1, min(j2, min_length)):
-                    if user_text[j] in punctuation_marks:
-                        highlighted_text += f'<span style="color:green;">{user_text[j]}</span>'
             elif tag == 'insert':
                 for j in range(j1, j2):
+                    if j >= len(user_text):  # Stop processing if beyond user text
+                        break
                     if user_text[j] in punctuation_marks:
                         highlighted_text += f'<span style="color:blue;">{user_text[j]}</span>'
+                    else:
+                        highlighted_text += user_text[j]
 
         return highlighted_text
+
+
+
 
     def get(self, request, *args, **kwargs):
         try:
@@ -532,10 +549,17 @@ class ServicesCorrectionV2(APIView):
             multiple_spellings_found = self.find_multiple_spellings(service_text, multiple_spellings)
             hyphenated_adjectives_found = self.find_hyphenated_adjectives(service_file_script, hyphenated_adjectives)
 
-            multiple_spellings_full = {
-                "UK": [item.UK for item in MultipleSpellings.objects.filter(US__in=multiple_spellings_found)],
-                "US": [item.US for item in MultipleSpellings.objects.filter(UK__in=multiple_spellings_found)]
-            }
+            UK = []
+            US = []
+            for MS_item in MultipleSpellings.objects.all():
+                for item in multiple_spellings_found:
+                    if item == MS_item.UK:
+                        UK.append(item)
+                        US.append(MS_item.US)
+                    elif item == MS_item.US:
+                        US.append(item)
+                        UK.append(MS_item.UK)
+            multiple_spellings_full = {"UK":UK,"US":US}
 
             missing_words_final = [
                 word for word in differences['missing_words']
