@@ -88,7 +88,6 @@ class ServicesItem(APIView):
 
 
 
-
 class ServicesCorrectionAI(APIView):
     serializer_class = ServiceSerializer
     permission_classes = [AllowAny]
@@ -99,35 +98,41 @@ class ServicesCorrectionAI(APIView):
         student_text = service.text
         original_text = service.file.script
 
-        characters_to_remove = ",!#$%@*.?/:"
-        service_file_script = re.sub(f"[{re.escape(characters_to_remove)}]", "", service.file.script.replace('.', '. '))
-        service_text = re.sub(f"[{re.escape(characters_to_remove)}]", "", service.text.replace('.', '. '))
-
-        assistant = "As a marker, compare and contrast student_text and original_text based on the following commands: \n " \
-                    "1. Indicate any missing words from the original_text in red html color compared to the student_text. \n " \
-                    "2. Indicate any extra words in the student_text that are not in the original_text in green html color. \n " \
-                    "3. Strike through misspelled words and write the correct form in brackets next to them. \n  " \
-                    "4. Show any missing punctuation in the student_text compared to the original_text. \n " \
-                    "Highlight the comparison of the student_text and the original_text with different colors and show the output as HTML."
-
         try:
             client = OpenAI(api_key="token")
+            # Replace 'token' with your actual OpenAI API key
+
             response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "user", "content": f"student_text:{service_text} \n original_text:{service_file_script}"},
-                    {"role": "system", "content": assistant},
+                    {"role": "system",
+                     "content": "You are an expert text analyzer specializing in identifying differences between texts and highlighting them in HTML."},
+                    {"role": "user", "content": f"""
+                        Compare a text typed by the user with the reference text and accurately identify the differences between the two. 
+                        Deliver the differences highlighted in HTML using the following color coding:
+                        - Misspelled words: gray color (indicate with <span style='color:gray'>).
+                        - Correct form of misspelled words from the reference text: red color (indicate with <span style='color:red'>).
+                        - Missing words (present in reference text but not in user text): blue color (indicate with <span style='color:blue'>).
+                        - Extra words (present in user text but not in reference text): purple color (indicate with <span style='color:purple'>).
+
+                        Student Text: {student_text}
+                        Reference Text: {original_text}
+                    """},
                 ],
-                max_tokens=150,  # Adjust as needed
+                max_tokens=1500,  # Adjust as needed for longer responses
                 stop=None,
-                temperature=0.7)
-            # final_response = response.choices[0].message['content']
+                temperature=0.7
+            )
             response_dict = response.model_dump()
             message_content = response_dict['choices'][0]['message']['content']
+            # The variable `message_content` now contains the HTML response with the highlighted differences
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
         return Response(message_content, status=status.HTTP_200_OK)
+
+
 
 
 
