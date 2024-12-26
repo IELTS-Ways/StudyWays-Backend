@@ -34,7 +34,7 @@ class Profile(APIView):
             elif user.user_type == "student":
                 student, created = StudentProfile.objects.get_or_create(user=user)
 
-                #if User.objects.filter(id=data["invite_code"]).exists():
+                '''
                 if "invite_code" in data and User.objects.filter(id=data["invite_code"]).exists():
                     inviter = User.objects.get(id=data["invite_code"])
                     if inviter.user_type == "freelance":
@@ -47,6 +47,32 @@ class Profile(APIView):
                         institute_parent = InstituteProfile.objects.get(id=79)
                         student.institute = institute_parent
                 student.save()
+                '''
+
+                if "invite_code" in data:
+                    invite_code = data["invite_code"]
+                    if User.objects.filter(id=invite_code).exists():
+                        inviter = User.objects.get(id=invite_code)
+
+                        if inviter.user_type == "freelance" and FreelanceProfile.objects.filter(user=inviter).exists():
+                            freelance_parent = FreelanceProfile.objects.get(user=inviter)
+                            student.freelance = freelance_parent
+                        elif inviter.user_type == "institute" and InstituteProfile.objects.filter(user=inviter).exists():
+                            institute_parent = InstituteProfile.objects.get(user=inviter)
+                            student.institute = institute_parent
+                        else:
+                            try:
+                                institute_parent = InstituteProfile.objects.get(id=79)
+                                student.institute = institute_parent
+                            except InstituteProfile.DoesNotExist:
+                                raise ValueError("Default institute profile (id=79) not found.")
+                    else:
+                        raise ValueError(f"User with id={invite_code} does not exist.")
+                else:
+                    raise KeyError("Invite code is missing in data.")
+
+                student.save()
+
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
