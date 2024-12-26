@@ -88,19 +88,23 @@ class StudentOverview(APIView):
         free_trial = FreeTrial.objects.filter(user=student).first()
         if free_trial:
             free_trial.check_expired()
-            if free_trial.is_active:
+            free_trial_status = free_trial.is_active
+            if free_trial_status == "Active":
                 remaining_free_trial_days = (free_trial.end_date - now().date()).days
                 if remaining_free_trial_days < 0:
                     remaining_free_trial_days = 0
             else:
+                free_trial_status = "Expired"
                 remaining_free_trial_days = 0
         else:
+            free_trial_status = "Ready-To-Use"
             remaining_free_trial_days = 0
 
         membership = {
             "Audio-Video-Scripter": audio_video_scripter_remaining_days,
             "Memory-Mirror": memory_mirror_remaining_days,
             "Free-Trial": remaining_free_trial_days,
+            "Free-Trial-Status" : free_trial_status,
         }
 
         if student.parent_type() == "Institute":

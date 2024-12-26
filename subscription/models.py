@@ -70,24 +70,28 @@ class Subscription(models.Model):
 
 
 class FreeTrial(models.Model):
+    status_choices = (
+        ("Active", "Active"),
+        ("Expired", "Expired"),)
+    
     user = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="free_trial")
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.CharField(max_length=40, choices=status_choices)
 
     def activate_free_trial(self):
         self.start_date = now().date()
         self.end_date = self.start_date + timedelta(days=7)
-        self.is_active = True
+        self.is_active = "Active"
         self.save()
 
     def check_expired(self):
         if self.is_active and self.end_date <= now().date():
-            self.is_active = False
+            self.is_active = "Expired"
             self.save()
 
     def __str__(self):
-        return f"FreeTrial for {self.user} - {'Active' if self.is_active else 'Inactive'}"
+        return f"FreeTrial for {self.user} - {self.is_active}"
 
 
 
