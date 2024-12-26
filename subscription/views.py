@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from accounts.models import MarketerWallet, FreelanceWallet
 from accounts.models import InstituteProfile, StudentProfile, User, StudentWallet, InstituteWallet
 from subscription.serializers import SubscriptionSerializer, WithdrawRequestSerializer
-from subscription.models import Subscription, DefaultPrice
+from subscription.models import Subscription, DefaultPrice, FreeTrial
 import json
 import requests
 from django.conf import settings
@@ -437,6 +437,46 @@ class BOGOVerify(APIView):
         elif sub_type == "Memory-Mirror":
             return "Audio-Video-Scripter"
         return None
+
+
+class ActivateFreeTrialView(APIView):
+    permission_classes = [IsStudent]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        student_profile = StudentProfile.objects.get(user=user)
+        if FreeTrial.objects.filter(user=student_profile, is_active=True).exists():
+            return Response({"error": "You already have an active free trial."}, status=400)
+        else:
+            free_trial, created = FreeTrial.objects.get_or_create(user=student_profile)
+
+        free_trial.activate_free_trial()
+
+        Subscription.objects.create(
+            user=student_profile,
+            type="Audio-Video-Scripter",
+            status="Active",
+            day_period=7,
+            price=0,
+            paid=True,
+            description="Free trial subscription"
+        )
+        Subscription.objects.create(
+            user=student_profile,
+            type="Memory-Mirror",
+            status="Active",
+            day_period=7,
+            price=0,
+            paid=True,
+            description="Free trial subscription"
+        )
+
+        return Response({
+            "message": "Free trial activated successfully!",
+            "start_date": free_trial.start_date,
+            "end_date": free_trial.end_date
+        })
+
 
 
 class Membership(APIView):

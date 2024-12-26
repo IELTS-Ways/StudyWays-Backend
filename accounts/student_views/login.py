@@ -10,7 +10,8 @@ from django.contrib.auth import authenticate
 from accounts.views.permissions import IsStudent
 from rest_framework.permissions import AllowAny
 from accounts.models.student_profile import StudentProfile, InstituteProfile, StudentWallet
-from subscription.models import Subscription, DefaultPrice
+from subscription.models import Subscription, DefaultPrice, FreeTrial
+from django.utils.timezone import now
 
 
 class StudentLogin(APIView):
@@ -83,9 +84,24 @@ class StudentOverview(APIView):
             memory_mirror_remaining_days = memory_mirror.remaining_days()
         else:
             memory_mirror_remaining_days = 0
+            
+        free_trial = FreeTrial.objects.filter(user=student).first()
+        if free_trial:
+            free_trial.check_expired()
+            if free_trial.is_active:
+                remaining_free_trial_days = (free_trial.end_date - now().date()).days
+                if remaining_free_trial_days < 0:
+                    remaining_free_trial_days = 0
+            else:
+                remaining_free_trial_days = 0
+        else:
+            remaining_free_trial_days = 0
 
-        membership = {"Audio-Video-Scripter": audio_video_scripter_remaining_days,
-                      "Memory-Mirror": memory_mirror_remaining_days}
+        membership = {
+            "Audio-Video-Scripter": audio_video_scripter_remaining_days,
+            "Memory-Mirror": memory_mirror_remaining_days,
+            "Free-Trial": remaining_free_trial_days,
+        }
 
         if student.parent_type() == "Institute":
             memory_mirror_price = student.institute.memory_mirror_price_each_day

@@ -3,6 +3,7 @@ from accounts.models import StudentProfile, User, FreelanceProfile, InstitutePro
 import datetime
 from datetime import datetime as date_time
 from django.core.exceptions import ValidationError
+from django.utils.timezone import now, timedelta
 
 
 
@@ -65,6 +66,28 @@ class Subscription(models.Model):
 
     def __str__(self):
         return str(self.user) +'-'+ str(self.type)
+
+
+
+class FreeTrial(models.Model):
+    user = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="free_trial")
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=False)
+
+    def activate_free_trial(self):
+        self.start_date = now().date()
+        self.end_date = self.start_date + timedelta(days=7)
+        self.is_active = True
+        self.save()
+
+    def check_expired(self):
+        if self.is_active and self.end_date <= now().date():
+            self.is_active = False
+            self.save()
+
+    def __str__(self):
+        return f"FreeTrial for {self.user} - {'Active' if self.is_active else 'Inactive'}"
 
 
 

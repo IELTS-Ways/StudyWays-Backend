@@ -1,5 +1,5 @@
 from django.contrib import admin
-from subscription.models import Subscription,DefaultPrice, Withdraw
+from subscription.models import Subscription,DefaultPrice, Withdraw, FreeTrial
 from import_export.admin import ImportExportModelAdmin
 
 class SubscriptionAdmin(ImportExportModelAdmin):
@@ -17,3 +17,8 @@ class WithdrawAdmin(ImportExportModelAdmin):
     list_filter = ("status", "created_at")
 admin.site.register(Withdraw, WithdrawAdmin)
 
+
+class FreeTrialAdmin(ImportExportModelAdmin):
+    # list_display = ('user', 'is_active')
+    list_filter = ("is_active",)
+admin.site.register(FreeTrial, FreeTrialAdmin)
