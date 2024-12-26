@@ -34,21 +34,6 @@ class Profile(APIView):
             elif user.user_type == "student":
                 student, created = StudentProfile.objects.get_or_create(user=user)
 
-                '''
-                if "invite_code" in data and User.objects.filter(id=data["invite_code"]).exists():
-                    inviter = User.objects.get(id=data["invite_code"])
-                    if inviter.user_type == "freelance":
-                        freelance_parent = FreelanceProfile.objects.get(user=inviter)
-                        student.freelance = freelance_parent
-                    elif inviter.user_type == "institute":
-                        institute_parent = InstituteProfile.objects.get(user=inviter)
-                        student.institute = institute_parent
-                    else:
-                        institute_parent = InstituteProfile.objects.get(id=79)
-                        student.institute = institute_parent
-                student.save()
-                '''
-
                 if "invite_code" in data:
                     invite_code = data["invite_code"]
                     if User.objects.filter(id=invite_code).exists():
@@ -69,7 +54,11 @@ class Profile(APIView):
                     else:
                         raise ValueError(f"User with id={invite_code} does not exist.")
                 else:
-                    raise KeyError("Invite code is missing in data.")
+                    try:
+                        institute_parent = InstituteProfile.objects.get(id=79)
+                        student.institute = institute_parent
+                    except InstituteProfile.DoesNotExist:
+                        raise ValueError("Default institute profile (id=79) not found.")
 
                 student.save()
 
