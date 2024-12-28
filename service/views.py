@@ -136,6 +136,7 @@ class ServicesCorrectionAI(APIView):
 
 
 
+
 class ServicesCorrection(APIView):
     serializer_class = ServiceSerializer
     permission_classes = [AllowAny]
@@ -590,5 +591,4 @@ class ServicesCorrectionV2(APIView):
             return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": f"Service not found or something went wrong. Error: {e}"}, status=status.HTTP_400_BAD_REQUEST)
-
 
