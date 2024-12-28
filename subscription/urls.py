@@ -1,5 +1,5 @@
 from django.urls import path
-from subscription.views import StudentSubs, AddSub, AddSubPay, SubPayVerify, Membership, WithdrawRequest, BOGOVerify, BOGOSubPay
+from subscription.views import StudentSubs, AddSub, AddSubPay, SubPayVerify, Membership, WithdrawRequest, BOGOVerify, BOGOSubPay, ActivateFreeTrialView
 from subscription.transactions import FreelanceTransactions, MarketerTransactions,InstituteTransactions, StudentTransactions
 
 
@@ -11,6 +11,8 @@ urlpatterns = [
     # 
     path("BOGO-pay", BOGOSubPay.as_view(), name="BOGO-pay"),
     path("BOGO-verify/<int:id>/",BOGOVerify.as_view(),name="BOGO-verify"),
+    # 
+    path("free-trial",ActivateFreeTrialView.as_view(),name="free-trial"),
     #
     path("membership-time", Membership.as_view(), name="membership-time"),
     #
