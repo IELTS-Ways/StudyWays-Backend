@@ -16,6 +16,7 @@ from django.http import HttpResponse,JsonResponse
 from datetime import datetime
 from django.shortcuts import redirect
 import decimal
+from datetime import timedelta
 
 
 
@@ -442,10 +443,10 @@ class BOGOVerify(APIView):
 class ActivateFreeTrialView(APIView):
     permission_classes = [IsStudent]
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         user = request.user
         student_profile = StudentProfile.objects.get(user=user)
-        if FreeTrial.objects.filter(user=student_profile, is_active=True).exists():
+        if FreeTrial.objects.filter(user=student_profile).exists():
             return Response({"error": "You already have an active free trial."}, status=400)
         else:
             free_trial, created = FreeTrial.objects.get_or_create(user=student_profile)
@@ -471,10 +472,12 @@ class ActivateFreeTrialView(APIView):
             description="Free trial subscription"
         )
 
+        end_date = free_trial.start_date + timedelta(days=free_trial.day_period)
+        
         return Response({
             "message": "Free trial activated successfully!",
             "start_date": free_trial.start_date,
-            "end_date": free_trial.end_date
+            "end_date": end_date
         })
 
 

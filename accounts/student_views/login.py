@@ -90,7 +90,7 @@ class StudentOverview(APIView):
             free_trial.check_expired()
             free_trial_status = free_trial.is_active
             if free_trial_status == "Active":
-                remaining_free_trial_days = (free_trial.end_date - now().date()).days
+                remaining_free_trial_days = free_trial.remaining_days()
                 if remaining_free_trial_days < 0:
                     remaining_free_trial_days = 0
             else:
