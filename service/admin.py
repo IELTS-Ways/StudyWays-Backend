@@ -29,7 +29,7 @@ admin.site.register(FeedbackSystem, FeedbackSystemAdmin)
 
 
 class ReportShareAdmin(ImportExportModelAdmin):
-    list_display = ('link','user','created_at','access_type', 'report')
+    list_display = ('link','user','created_at','access_type', 'report_id')
     list_filter = ("created_at",'access_type')
-    search_fields = ['access_type', 'report', 'link']
+    search_fields = ['report_id', 'link']
 admin.site.register(ReportSharing, ReportShareAdmin)

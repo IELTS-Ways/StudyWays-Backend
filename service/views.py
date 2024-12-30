@@ -92,14 +92,24 @@ class ServicesCorrectionAI(APIView):
     serializer_class = ServiceSerializer
     permission_classes = [AllowAny]
 
+    def clean_text(self, text, characters_to_remove):
+        return re.sub(f"[{re.escape(characters_to_remove)}]", "", text.replace('.', '. '))
+
     def get(self, *args, **kwargs):
         service = Service.objects.get(id=self.kwargs["id"])
 
-        student_text = service.text
-        original_text = service.file.script
+
+        characters_to_remove = ",!#$%@*.?/"
+        service_file_script = self.clean_text(service.file.script, characters_to_remove)
+        service_text = self.clean_text(service.text, characters_to_remove)
+
+        student_text = service_text
+        original_text = service_file_script
+
+        token = "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"
 
         try:
-            client = OpenAI(api_key="token")
+            client = OpenAI(api_key=token)
             # Replace 'token' with your actual OpenAI API key
 
             response = client.chat.completions.create(
