@@ -349,3 +349,19 @@ ZP_API_VERIFY = "https://www.zarinpal.com/pg/rest/WebGate/PaymentVerification.js
 ZP_API_STARTPAY = "https://www.zarinpal.com/pg/StartPay/"
 ZARIN_CALL_BACK = 'https://api.studyways.ir/subscription/pay-verify/'
 # END ZARRINPAL CONFIGURATION
+
+
+# SMTP CONFIGURATION
+
+from decouple import config
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('MAIL_HOST')
+EMAIL_PORT = config('MAIL_PORT', cast=int)
+EMAIL_HOST_USER = config('MAIL_USER')
+EMAIL_HOST_PASSWORD = config('MAIL_PASSWORD')
+EMAIL_USE_TLS = False # Disable STARTTLS 
+EMAIL_USE_SSL = True  # Force TLS
+DEFAULT_FROM_EMAIL = config('MAIL_FROM_ADDRESS')
+
+# END SMTP CONFIGURATION
