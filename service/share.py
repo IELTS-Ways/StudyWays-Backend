@@ -58,7 +58,9 @@ class ReportShareLink(APIView):
             parent = request.user
             shared_student = report_sharing.user
 
-            if shared_student.institute:
+            if report_sharing.user.user == request.user:
+                pass
+            elif shared_student.institute:
                 if parent.id != shared_student.institute.user.id:
                     return Response({"error": "You are not authorized to view this report."}, status=403)
             elif shared_student.freelance:
@@ -73,3 +75,43 @@ class ReportShareLink(APIView):
 
         return Response(response.json(), status=response.status_code)
 
+
+
+class ReportShareHistory(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        
+        student_profile = request.user
+
+        report_shares = ReportSharing.objects.filter(user__user=student_profile)
+        
+        # filtering
+        service = request.query_params.get("service")
+        report_id = request.query_params.get("report_id")
+        access_type = request.query_params.get("access_type")
+
+        if service:
+            report_shares = report_shares.filter(report__type=service)
+        if report_id:
+            report_shares = report_shares.filter(report__id=report_id)
+        if access_type:
+            report_shares = report_shares.filter(access_type=access_type)
+        
+        # ordering
+        ordering = request.query_params.get("ordering", "-created_at")
+        if ordering in ["created_at", "-created_at"]:
+            report_shares = report_shares.order_by(ordering)
+
+        data = [
+            {
+                "link": report.link,
+                "report_id": report.report.id,
+                "service" : report.report.type,
+                "access_type": report.access_type,
+                "created_at": report.created_at, 
+            }
+            for report in report_shares
+        ]
+
+        return Response({"links": data}, status=200)

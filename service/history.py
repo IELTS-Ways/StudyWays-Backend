@@ -5,7 +5,7 @@ from rest_framework.generics import GenericAPIView
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent, IsMarketer
 from accounts.models import InstituteProfile, StudentProfile, FreelanceProfile, MarketerPanel, User
 from service.serializers import ServiceHistorySerializer
-from service.models import Service
+from service.models import Service, ReportSharing
 import json
 import requests
 from django.conf import settings
@@ -30,18 +30,46 @@ class StudentHistory(GenericAPIView):
     pagination_class = CustomPagination
     serializer_class = ServiceHistorySerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count','slash_count','average','missing_words','created_at']
-    search_fields = ['type', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count','slash_count','average','missing_words','created_at']
-    ordering_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count','slash_count','average','missing_words','created_at']
+    filterset_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count', 'slash_count', 'average', 'missing_words', 'created_at']
+    search_fields = ['type', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count', 'slash_count', 'average', 'missing_words', 'created_at']
+    ordering_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count', 'slash_count', 'average', 'missing_words', 'created_at']
     ordering = ['-created_at']
+
+    def create_share_link(self, service, user):
+
+        report_sharing, created = ReportSharing.objects.get_or_create(
+            user=user,
+            report=service,
+            access_type='allow_any',
+        )
+        if created:
+            report_sharing.generate_dynamic_link()
+            report_sharing.save()
+        return report_sharing.link
 
     def get(self, *args, **kwargs):
         user = StudentProfile.objects.get(user=self.request.user)
         history = self.filter_queryset(Service.objects.filter(user=user))
         page = self.paginate_queryset(history)
+
         if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.filter_queryset(Service.objects.filter(user=user))
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            data = []
+            for service in page:
+                share_link = self.create_share_link(service, user)
+                serializer = self.serializer_class(service)
+                serialized_data = serializer.data
+                serialized_data['share_link'] = share_link
+                data.append(serialized_data)
+            return self.get_paginated_response(data)
+
+        data = []
+        for service in history:
+            share_link = self.create_share_link(service, user)
+            serializer = self.serializer_class(service)
+            serialized_data = serializer.data
+            serialized_data['share_link'] = share_link
+            data.append(serialized_data)
+
+        return Response(data, status=status.HTTP_200_OK)
+
 
