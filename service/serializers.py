@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from service.models import Service, MultipleSpellings, HyphenatedAdjectives, FeedbackSystem
+from service.models import Service, MultipleSpellings, HyphenatedAdjectives, FeedbackSystem, DraftService
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -9,6 +9,13 @@ class ServiceSerializer(serializers.ModelSerializer):
         exclude = ['full_result']
         
 
+class DraftServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DraftService
+        #fields = "__all__"
+        exclude = ['full_result']
+        
+        
 class ServiceHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Service

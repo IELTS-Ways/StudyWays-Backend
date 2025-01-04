@@ -1,5 +1,5 @@
 from django.contrib import admin
-from service.models import Service, MultipleSpellings, HyphenatedAdjectives, FeedbackSystem, ReportSharing
+from service.models import Service, MultipleSpellings, HyphenatedAdjectives, FeedbackSystem, ReportSharing, DraftService
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -8,6 +8,13 @@ class ServiceAdmin(ImportExportModelAdmin):
     list_filter = ("type", "user", "done")
     search_fields = ['type']
 admin.site.register(Service, ServiceAdmin)
+
+
+class DraftServiceAdmin(ImportExportModelAdmin):
+    list_display = ('type', 'user', 'created_at', 'done')
+    list_filter = ("type", "user", "done")
+    search_fields = ['type']
+admin.site.register(DraftService, DraftServiceAdmin)
 
 
 class MultipleSpellingsAdmin(ImportExportModelAdmin):

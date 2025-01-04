@@ -34,6 +34,33 @@ class Service(models.Model):
         return str(self.user) +'-'+ str(self.type)
 
 
+class DraftService(models.Model):
+    type_choices = (
+        ("Audio-Video-Scripter", "Audio-Video-Scripter"),
+        ("Memory-Mirror", "Memory-Mirror"),
+        ("Planner", "Planner"),
+        ("Fast-reading", "Fast-reading"),)
+    type = models.CharField(max_length=30, choices=type_choices)
+    user = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    text = models.TextField(max_length=10000, null=True, blank=True)
+    done = models.BooleanField(default=False)
+    start_time = models.CharField(max_length=100, null=True, blank=True)
+    end_time = models.CharField(max_length=100, null=True, blank=True)
+    duration = models.CharField(max_length=100, null=True, blank=True)
+    share_with = models.CharField(max_length=100, null=True, blank=True)
+    word_count = models.IntegerField(default=0)
+    slash_count = models.IntegerField(default=0)
+    average = models.DecimalField(decimal_places=2,max_digits=10, null=True, blank=True)
+    playback = models.BooleanField(default=False)
+    lock = models.BooleanField(default=False)
+    missing_words = models.IntegerField(default=0)
+    device = models.CharField(max_length=100, default="unknown")
+    created_at = models.DateTimeField(auto_now_add=True)
+    full_result = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.user) +'-'+ str(self.type)
 
 
 class MultipleSpellings(models.Model):

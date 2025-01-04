@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from service.serializers import ServiceSerializer, HyphenatedAdjectivesSerializer, FeedbackSerializer
-from service.models import Service, MultipleSpellings, HyphenatedAdjectives
+from service.serializers import ServiceSerializer, HyphenatedAdjectivesSerializer, FeedbackSerializer, DraftServiceSerializer
+from service.models import Service, MultipleSpellings, HyphenatedAdjectives, DraftService
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
 from accounts.models import InstituteProfile, StudentProfile
@@ -83,8 +83,54 @@ class ServicesItem(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response("service not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+class DraftServices(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DraftServiceSerializer
+
+    def get(self, *args, **kwargs):
+        try:
+            user = self.request.user
+            if user.user_type == "student":
+                student = StudentProfile.objects.get(user=user)
+            else:
+                student = StudentProfile.objects.get(id=203)
+
+            service = DraftService.objects.filter(user=student)
+            serializer = self.serializer_class(service, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response("Service not found or something went wrong, try again",status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, *args, **kwargs):
+        data = self.request.data.copy()
+        user = self.request.user
+        if user.user_type == "student":
+            student = StudentProfile.objects.get(user=user)
+        else:
+            student = StudentProfile.objects.get(id=203)
+
+        data["user"] = student.id
+        serializer = self.serializer_class(data=data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
+
+class DraftServicesItem(APIView):
+    serializer_class = DraftServiceSerializer
+    permission_classes = [AllowAny]
+    def get(self, *args, **kwargs):
+        try:
+            service = DraftService.objects.get(id=self.kwargs["id"])
+            serializer = self.serializer_class(service)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response("service not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
 
 
 
