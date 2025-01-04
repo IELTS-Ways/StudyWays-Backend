@@ -37,12 +37,11 @@ class StudentHistory(GenericAPIView):
 
     def create_share_link(self, service, user):
 
-        report_sharing, created = ReportSharing.objects.get_or_create(
-            user=user,
-            report=service,
-            access_type='allow_any',
-        )
-        if created:
+        report_sharing = ReportSharing.objects.filter(user=user, report=service).first()
+        if not report_sharing:
+            report_sharing = ReportSharing.objects.create(
+                user=user, report=service, access_type='allow_any'
+            )
             report_sharing.generate_dynamic_link()
             report_sharing.save()
         return report_sharing.link
