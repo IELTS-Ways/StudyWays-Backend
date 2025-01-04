@@ -30,45 +30,17 @@ class StudentHistory(GenericAPIView):
     pagination_class = CustomPagination
     serializer_class = ServiceHistorySerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count', 'slash_count', 'average', 'missing_words', 'created_at']
-    search_fields = ['type', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count', 'slash_count', 'average', 'missing_words', 'created_at']
-    ordering_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count', 'slash_count', 'average', 'missing_words', 'created_at']
+    filterset_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count','slash_count','average','missing_words','created_at']
+    search_fields = ['type', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count','slash_count','average','missing_words','created_at']
+    ordering_fields = ['type', 'user', 'file', 'text', 'done', 'start_time', 'end_time', 'duration', 'word_count','slash_count','average','missing_words','created_at']
     ordering = ['-created_at']
-
-    def create_share_link(self, service, user):
-
-        report_sharing = ReportSharing.objects.filter(user=user, report=service).first()
-        if not report_sharing:
-            report_sharing = ReportSharing.objects.create(
-                user=user, report=service, access_type='allow_any'
-            )
-            report_sharing.generate_dynamic_link()
-            report_sharing.save()
-        return report_sharing.link
 
     def get(self, *args, **kwargs):
         user = StudentProfile.objects.get(user=self.request.user)
         history = self.filter_queryset(Service.objects.filter(user=user))
         page = self.paginate_queryset(history)
-
         if page is not None:
-            data = []
-            for service in page:
-                share_link = self.create_share_link(service, user)
-                serializer = self.serializer_class(service)
-                serialized_data = serializer.data
-                serialized_data['share_link'] = share_link
-                data.append(serialized_data)
-            return self.get_paginated_response(data)
-
-        data = []
-        for service in history:
-            share_link = self.create_share_link(service, user)
-            serializer = self.serializer_class(service)
-            serialized_data = serializer.data
-            serialized_data['share_link'] = share_link
-            data.append(serialized_data)
-
-        return Response(data, status=status.HTTP_200_OK)
-
-
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.filter_queryset(Service.objects.filter(user=user))
+        return Response(serializer.data, status=status.HTTP_200_OK)
