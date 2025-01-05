@@ -132,6 +132,14 @@ class DraftServicesItem(APIView):
         except:
             return Response("service not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, *args, **kwargs):
+        try:
+            service = DraftService.objects.get(id=self.kwargs["id"])
+            service.delete()
+            return Response("Draft deleted.", status=status.HTTP_200_OK)
+        except:
+            return Response("service not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class ServicesCorrectionAI(APIView):
