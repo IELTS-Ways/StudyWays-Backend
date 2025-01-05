@@ -171,6 +171,6 @@ class SendEmailOTP(APIView):
             )
         except Exception as e:
             return Response(
-                {"success": False, "errors": f"Error in sending email: {str(e)}"},
+                {"success": False, "errors": [_("Something went wrong.")]},
                 status=status.HTTP_400_BAD_REQUEST,
             )

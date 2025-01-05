@@ -13,7 +13,7 @@ urlpatterns = [
     path("feedback", FeedbackView.as_view(), name="feedback"),
     # 
     path("draft-services", DraftServices.as_view(), name="draft-services"),
-    path("draft-service-item/<int:id>/",DraftServicesItem.as_view(),name="draft-service-item"),
+    path("draft-service-item/<int:id>",DraftServicesItem.as_view(),name="draft-service-item"),
     # 
     path("student-history", StudentHistory.as_view(), name="student-history"),
     # 
