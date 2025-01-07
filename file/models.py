@@ -199,4 +199,3 @@ class File(models.Model):
 
     def __str__(self):
         return str(self.book) +"|"+ str(self.unit) +"|" +str(self.page) +"|"+ str(self.cd) +"|"+ str(self.track)
-
