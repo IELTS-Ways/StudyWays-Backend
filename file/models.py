@@ -116,6 +116,9 @@ class File(models.Model):
 
     book_type_choices = (
         ("IELTS", "IELTS"),
+        ("IELTS Task 1 (ACAD)", "IELTS Task 1 (ACAD)"),
+        ("IELTS Task 1 (GT)", "IELTS Task 1 (GT)"),
+        ("IELTS Task 2", "IELTS Task 2"),
         ("Inside Reading", "Inside Reading"),
         ("Inside Writing", "Inside Writing"),
         ("Teen2Teen", "Teen2Teen"),
@@ -155,10 +158,7 @@ class File(models.Model):
         ("News", "News"),
         ("Course Books", "Course Books"),
         ("Periodicals", "Periodicals"),
-        ("Story Book", "Story Book"),
-        ("IELTS Task 1 (ACAD)", "IELTS Task 1 (ACAD)"),
-        ("IELTS Task 1 (GT)", "IELTS Task 1 (GT)"),
-        ("IELTS Task 2", "IELTS Task 2"),)
+        ("Story Book", "Story Book"),)
 
     cefr_choices = (
         ("Beginner (Easy Start/Starter)", "Beginner (Easy Start/Starter)"),
