@@ -140,7 +140,17 @@ class DraftServicesItem(APIView):
         except:
             return Response("service not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
 
-
+    def patch(self, *args, **kwargs):
+        try:
+            service = DraftService.objects.get(id=self.kwargs["id"])
+            data = self.request.data
+            serializer = self.serializer_class(service, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("service not found or something went wrong, try again", status=status.HTTP_404_NOT_FOUND)
 
 
 class ServicesCorrectionAI(APIView):
