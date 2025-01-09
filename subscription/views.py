@@ -50,6 +50,38 @@ class AddSub(APIView):
 
 
 
+class AddGiftSub(APIView):
+    serializer_class = SubscriptionSerializer
+    permission_classes = [IsStudent]
+
+    def post(self, *args, **kwargs):
+        data = self.request.data
+        phone_number = data.get("phone_number")
+
+        if not phone_number:
+            return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(phone_number=phone_number).first()
+
+        if not user:
+            user = User.objects.create(phone_number=phone_number, user_type="student")
+            user.set_password("123") 
+            user.save()
+
+            StudentProfile.objects.create(user=user)
+
+        student = StudentProfile.objects.get(user=user)
+        data["user"] = student.id
+
+        serializer = self.serializer_class(data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
 class WithdrawRequest(APIView):
     serializer_class = WithdrawRequestSerializer
     permission_classes = [IsAuthenticated]
@@ -83,6 +115,120 @@ class WithdrawRequest(APIView):
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
     
     
+    
+class AddGiftSubPay(APIView):
+    serializer_class = SubscriptionSerializer
+    permission_classes = [IsStudent]
+
+    def post(self, *args, **kwargs):
+        authority = self.request.query_params.get("Authority")
+        status = self.request.query_params.get("Status")
+
+        data = self.request.data
+        phone_number = data.get("phone_number")
+
+        if not phone_number:
+            return Response({"error": "Phone number is required"}, status=400)
+
+        user = User.objects.filter(phone_number=phone_number).first()
+        if not user:
+            user = User.objects.create(phone_number=phone_number, user_type="student")
+            user.set_password("123") 
+            user.save()
+
+            StudentProfile.objects.create(user=user)
+
+        student = StudentProfile.objects.get(user=user)
+        data["user"] = student.id
+
+        serializer = self.serializer_class(data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+
+            inviter_sales_percentage = decimal.Decimal('0.0')
+            inviter_price = 0.0
+
+            if User.objects.filter(id=self.request.user.invite_code).exists():
+                inviter = User.objects.get(id=self.request.user.invite_code)
+                if inviter.user_type == "student":
+                    inviter_sales_percentage = decimal.Decimal('0.10')
+                else:
+                    inviter_sales_percentage = decimal.Decimal('0.08')
+
+            sub = Subscription.objects.get(id=serializer.data['id'])
+            default_price = DefaultPrice.objects.all().last()
+
+            if student.parent_type() == "Institute":
+                sub.institute = student.institute
+                sub.save()
+                ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
+                appor_percent = default_price.apportionment_percentage
+                apportionment = sub.price * appor_percent
+                inviter_price = float(apportionment) * float(inviter_sales_percentage)
+                studyways_price = float(apportionment) - inviter_price 
+                institute_price = float(sub.price) - float(apportionment)
+                sub.institute_price = institute_price
+
+            else:
+                sub.freelance = student.freelance
+                sub.save()
+                studyways_price = 0
+                ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
+                appor_percent = default_price.freelance_apportionment_percentage
+                freelance_price = sub.price * appor_percent
+                apportionment = float(sub.price) - float(freelance_price)
+                sub.freelance_price = freelance_price
+                inviter_price = apportionment * float(inviter_sales_percentage) 
+
+            sub.inviter_sales_percentage = inviter_sales_percentage
+            sub.inviter_price = inviter_price
+            sub.apportionment_percentage = appor_percent
+            sub.save()
+
+            data = {
+                "MerchantID": ZP_MERCHANT_ID,
+                "Amount": int(sub.price),
+                "Description": "خریداری اشتراک آنلاین استادی ویز",
+                "Authority": authority,
+                "Phone": student.user.phone_number,
+                "CallbackURL": settings.ZARIN_CALL_BACK + str(sub.id) + "/",
+                "OrderID": sub.id,
+                "wages": [{
+                    "iban": default_price.shaba_number,
+                    "amount": int(studyways_price),
+                    "description": "تسهیم سود فروش از سرویس"
+                }],
+            }
+            data = json.dumps(data)
+
+            headers = {'content-type': 'application/json', 'content-length': str(len(data))}
+
+            try:
+                response = requests.post(settings.ZP_API_REQUEST, data=data, headers=headers, timeout=10)
+                response.raise_for_status()
+
+                if response.status_code == 200:
+                    response = response.json()
+                    if response['Status'] == 100:
+                        sub.authority = response['Authority']
+                        sub.save()
+                        sub_serializer = SubscriptionSerializer(sub)
+                        data = {'status': True, 'url': settings.ZP_API_STARTPAY + str(response['Authority']),
+                                'order': sub.id, 'authority': response['Authority']}
+                        return SuccessResponse(sub_serializer.data, data)
+                    else:
+                        return Response(response['errors'], status=400)
+
+                return response
+
+            except requests.exceptions.Timeout:
+                return Response({"error": "Request timeout"}, status=400)
+            except requests.exceptions.ConnectionError:
+                return Response({"error": "Connection error"}, status=400)
+
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+    
+
 
 class AddSubPay(APIView):
     serializer_class = SubscriptionSerializer
