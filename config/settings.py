@@ -171,8 +171,6 @@ PASSWORD_HASHERS = [
 ]
 
 
-
-
 # S3 Settings
 LIARA_ENDPOINT="https://storage.iran.liara.space"
 LIARA_BUCKET_NAME="studyways"
@@ -236,7 +234,6 @@ CACHES = {
 
 
 
-
 # AUTH USER MODEL CONFIGURATION
 AUTH_USER_MODEL = "accounts.User"
 # END AUTH USER MODEL CONFIGURATION
@@ -270,7 +267,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
-
 
 
 
