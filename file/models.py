@@ -145,6 +145,7 @@ class File(models.Model):
         ("Magazine", "Magazine"),
         ("Active Skills for Reading", "Active Skills for Reading"),
         ("Ready For", "Ready For"),
+        ("6 Minute English", "6 Minute English"),
         ("Other", "Other"),)
 
     skill_type_choices = (
