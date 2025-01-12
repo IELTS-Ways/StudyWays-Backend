@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from service.serializers import ServiceSerializer, HyphenatedAdjectivesSerializer, FeedbackSerializer, DraftServiceSerializer
+from service.serializers import ServiceSerializer, HyphenatedAdjectivesSerializer, FeedbackSerializer, DraftServiceSerializer, DraftItemServiceSerializer
 from service.models import Service, MultipleSpellings, HyphenatedAdjectives, DraftService
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from accounts.views.permissions import IsInstitute, IsFreelance, IsStudent
@@ -122,7 +122,7 @@ class DraftServices(APIView):
 
 
 class DraftServicesItem(APIView):
-    serializer_class = DraftServiceSerializer
+    serializer_class = DraftItemServiceSerializer
     permission_classes = [AllowAny]
     def get(self, *args, **kwargs):
         try:
