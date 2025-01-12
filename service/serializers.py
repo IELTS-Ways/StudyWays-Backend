@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from service.models import Service, MultipleSpellings, HyphenatedAdjectives, FeedbackSystem, DraftService
-
+from file.serializers import FileSerializer
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,6 +10,16 @@ class ServiceSerializer(serializers.ModelSerializer):
         
 
 class DraftServiceSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = DraftService
+        #fields = "__all__"
+        exclude = ['full_result']
+        
+
+class DraftItemServiceSerializer(serializers.ModelSerializer):
+    file_details = FileSerializer(source='file', read_only=True)
+    
     class Meta:
         model = DraftService
         #fields = "__all__"
