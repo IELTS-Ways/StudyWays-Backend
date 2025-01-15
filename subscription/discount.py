@@ -38,7 +38,7 @@ class DiscountItem(APIView):
 
     def delete(self, *args, **kwargs):
         try:
-            code = DiscountCode.objects.get(id=self.kwargs["id"])
+            code = DiscountCode.objects.get(code=self.kwargs["code"])
             code.delete()
             return Response("discount code deleted.", status=status.HTTP_200_OK)
         except:
