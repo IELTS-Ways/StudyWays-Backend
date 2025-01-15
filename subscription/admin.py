@@ -1,5 +1,5 @@
 from django.contrib import admin
-from subscription.models import Subscription,DefaultPrice, Withdraw, FreeTrial
+from subscription.models import Subscription,DefaultPrice, Withdraw, FreeTrial, DiscountCode
 from import_export.admin import ImportExportModelAdmin
 
 class SubscriptionAdmin(ImportExportModelAdmin):
@@ -22,3 +22,10 @@ class FreeTrialAdmin(ImportExportModelAdmin):
     list_display = ('user', 'is_active', 'remaining_days')
     list_filter = ("is_active",)
 admin.site.register(FreeTrial, FreeTrialAdmin)
+
+class DiscountCodeAdmin(ImportExportModelAdmin):
+    list_display = ('code', 'discount_percentage', 'status', 'limit_days', 'days_remaining', 'usage_limit', 'usage_count')
+    list_filter = ("status",)
+    search_fields = ['code', 'discount_percentage', 'limit_days', 'usage_limit']
+admin.site.register(DiscountCode, DiscountCodeAdmin)
+

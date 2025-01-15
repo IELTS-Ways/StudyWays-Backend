@@ -138,3 +138,48 @@ class Withdraw(models.Model):
     
     def __str__(self):
         return str(self.user) + '-' + str(self.status) 
+    
+    
+    
+class DiscountCode(models.Model):
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Expired', 'Expired'),
+    ]
+    
+    code = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    discount_percentage = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Active')
+    limit_days = models.PositiveIntegerField(blank=True, null=True)
+    usage_limit = models.PositiveIntegerField(blank=True, null=True)
+    usage_count = models.PositiveIntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_active(self):
+        current_date = now()
+        if self.status == 'Expired':
+            return False
+        if self.limit_days and current_date > self.created_at + timedelta(days=self.limit_days):
+            return False
+        if self.usage_limit and self.usage_count >= self.usage_limit:
+            return False
+        return True
+
+    def use_code(self):
+        if self.is_active():
+            self.usage_count += 1
+            if self.usage_limit and self.usage_count >= self.usage_limit:
+                self.status = 'Expired'
+            self.save()
+            return True
+        return False
+    
+    def days_remaining(self):
+        if not self.limit_days:
+            return None
+        expiration_date = self.created_at + timedelta(days=self.limit_days)
+        remaining_days = (expiration_date - now()).days
+        return max(0, remaining_days)
+
+    def __str__(self):
+        return f"{self.code} ({self.discount_percentage}% off)"
