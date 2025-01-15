@@ -10,7 +10,6 @@ from drf_yasg import openapi
 from drf_yasg.inspectors import SwaggerAutoSchema
 from rest_framework import serializers
 
-
 schema_view = get_schema_view(
     openapi.Info(
         title="StudyWays API",
@@ -23,7 +22,6 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(AllowAny,),
 )
-
 
 
 urlpatterns = [
