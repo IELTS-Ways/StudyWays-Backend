@@ -30,7 +30,7 @@ class DiscountItem(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, *args, **kwargs):
         try:
-            code = DiscountCode.objects.get(id=self.kwargs["id"])
+            code = DiscountCode.objects.get(code=self.kwargs["code"])
             serializer = self.serializer_class(code)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:

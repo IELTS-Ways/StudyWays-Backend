@@ -29,5 +29,5 @@ urlpatterns = [
     path("withdraw", WithdrawRequest.as_view(), name="withdraw"),
     # 
     path("discount-code", Discount.as_view(), name="discount-code"),
-    path("discount-code-item/<int:id>", DiscountItem.as_view(), name="discount-code-item"),
+    path("discount-code-item/<str:code>", DiscountItem.as_view(), name="discount-code-item"),
 ]

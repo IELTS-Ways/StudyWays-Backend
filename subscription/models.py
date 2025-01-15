@@ -148,11 +148,11 @@ class DiscountCode(models.Model):
     ]
     
     code = models.CharField(max_length=50, unique=True, blank=True, null=True)
-    discount_percentage = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
+    discount_percentage = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Active')
-    limit_days = models.PositiveIntegerField(blank=True, null=True)
-    usage_limit = models.PositiveIntegerField(blank=True, null=True)
-    usage_count = models.PositiveIntegerField(blank=True, null=True)
+    limit_days = models.IntegerField(blank=True, null=True)
+    usage_limit = models.IntegerField(blank=True, null=True)
+    usage_count = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_active(self):
