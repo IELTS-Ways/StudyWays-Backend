@@ -3,7 +3,7 @@ from subscription.models import Subscription,DefaultPrice, Withdraw, FreeTrial, 
 from import_export.admin import ImportExportModelAdmin
 
 class SubscriptionAdmin(ImportExportModelAdmin):
-    list_display = ('type', 'user', 'created_at', "institute", 'expired', 'status', 'remaining_days')
+    list_display = ('type', 'user', 'created_at', "institute", 'expired', 'status', 'remaining_days','price','institute_price')
     list_filter = ("type", "created_at", "status","institute","freelance")
 admin.site.register(Subscription, SubscriptionAdmin)
 
