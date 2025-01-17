@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from accounts.models import MarketerWallet, FreelanceWallet
 from accounts.models import InstituteProfile, StudentProfile, User, StudentWallet, InstituteWallet
 from subscription.serializers import SubscriptionSerializer, WithdrawRequestSerializer
-from subscription.models import Subscription, DefaultPrice, FreeTrial
+from subscription.models import Subscription, DefaultPrice, FreeTrial, DiscountCode
 import json
 import requests
 from django.conf import settings
@@ -241,6 +241,35 @@ class AddSubPay(APIView):
         data = self.request.data
         student = StudentProfile.objects.get(user=self.request.user)
         data["user"] = student.id
+        discount_code = data.get("discount_code")
+
+        discount_amount = 0
+
+        if discount_code:
+            try:
+                discount = DiscountCode.objects.get(code=discount_code)
+                if student.institute:
+                    if not discount.institute or discount.institute != student.institute:
+                        return Response(
+                            "This discount code is not valid for your institute.",
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                else:
+                    return Response(
+                        "You are not associated with any institute or freelance.",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                if not discount.use_code():
+                    return Response(
+                        "This discount code is no longer valid or expired.",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                discount_amount = discount.discount_percentage / 100
+
+            except DiscountCode.DoesNotExist:
+                return Response("Discount code not found.", status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.serializer_class(data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -256,8 +285,9 @@ class AddSubPay(APIView):
             else:
                 sales_percentage = decimal.Decimal('0.0')
 
-
             sub = Subscription.objects.get(id=serializer.data['id'])
+            sub_discount = sub.price - (sub.price * discount_amount)
+            sub.save()
             default_price = DefaultPrice.objects.all().last()
 
             if student.parent_type() == "Institute":
@@ -268,7 +298,7 @@ class AddSubPay(APIView):
                 apportionment = sub.price * appor_percent
                 inviter_price = float(apportionment) * float(sales_percentage)   #share with inviter
                 studyways_price = float(apportionment) - inviter_price           #send to us
-                institute_price = float(sub.price) - float(apportionment)        #send to institute
+                institute_price = float(sub_discount) - float(apportionment)        #send to institute
                 sub.institute_price = institute_price
 
             else:

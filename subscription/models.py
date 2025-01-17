@@ -47,6 +47,7 @@ class Subscription(models.Model):
     apportionment_percentage = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
     freelance_price = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
     institute_price = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
+    discount_code = models.CharField(max_length=50, blank=True, null=True)
 
     def expired(self):
         delta = datetime.date.today() - self.created_at
@@ -146,7 +147,7 @@ class DiscountCode(models.Model):
         ('Active', 'Active'),
         ('Expired', 'Expired'),
     ]
-    
+    institute = models.ForeignKey(InstituteProfile, on_delete=models.CASCADE, blank=True, null=True)
     code = models.CharField(max_length=50, unique=True, blank=True, null=True)
     discount_percentage = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Active')
