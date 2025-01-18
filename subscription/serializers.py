@@ -17,7 +17,7 @@ class FreelanceTransactionsSerializer(serializers.ModelSerializer):
 class InstituteTransactionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
-        fields = ('type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price')
+        fields = ('type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price','discount_amount')
         
         
 class InviterTransactionsSerializer(serializers.ModelSerializer):

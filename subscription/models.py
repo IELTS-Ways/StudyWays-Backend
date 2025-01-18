@@ -48,6 +48,7 @@ class Subscription(models.Model):
     freelance_price = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
     institute_price = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
     discount_code = models.CharField(max_length=50, blank=True, null=True)
+    discount_amount = models.IntegerField(default=0)
 
     def expired(self):
         delta = datetime.date.today() - self.created_at

@@ -298,8 +298,9 @@ class AddSubPay(APIView):
                 apportionment = sub.price * appor_percent
                 inviter_price = float(apportionment) * float(sales_percentage)   #share with inviter
                 studyways_price = float(apportionment) - inviter_price           #send to us
-                institute_price = float(sub_discount) - float(apportionment)        #send to institute
+                institute_price = float(sub_discount) - float(apportionment)     #send to institute
                 sub.institute_price = institute_price
+                sub.discount_amount = discount_amount
 
             else:
                 sub.freelance = student.freelance
