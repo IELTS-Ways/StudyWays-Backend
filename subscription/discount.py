@@ -32,8 +32,13 @@ class Discount(APIView):
     
 class DiscountItem(APIView):
     serializer_class = DiscountCodeSerializer
-    permission_classes = [IsStudent]
-
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsStudent()]
+        elif self.request.method == 'DELETE':
+            return [IsInstitute()]
+        return super().get_permissions()
+    
     def get(self, *args, **kwargs):
         try:
             student = StudentProfile.objects.get(user=self.request.user)
@@ -46,8 +51,10 @@ class DiscountItem(APIView):
         
     def delete(self, *args, **kwargs):
         try:
-            code = DiscountCode.objects.get(code=self.kwargs["code"])
-            code.delete()
-            return Response("discount code deleted.", status=status.HTTP_200_OK)
+            institute = InstituteProfile.objects.get(user=self.request.user)
+            if institute:
+                code = DiscountCode.objects.get(code=self.kwargs["code"], institute=institute)
+                code.delete()
+                return Response("discount code deleted.", status=status.HTTP_200_OK)
         except:
             return Response("discount code not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
