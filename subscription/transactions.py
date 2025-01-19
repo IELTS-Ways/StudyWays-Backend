@@ -33,6 +33,7 @@ class FreelanceTransactions(GenericAPIView):
     filterset_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'freelance_price']
     search_fields = ['type', 'status', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'freelance_price']
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'freelance_price']
+    ordering = ['-created_at']
 
     def get(self, request, *args, **kwargs):
         freelance = FreelanceProfile.objects.get(user=request.user)
@@ -79,7 +80,8 @@ class InstituteTransactions(GenericAPIView):
     filterset_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price']
     search_fields = ['type', 'status','day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price']
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'apportionment_percentage', 'institute_price']
-    
+    ordering = ['-created_at']
+
     def get(self, request, *args, **kwargs):
         institute = InstituteProfile.objects.get(user=request.user)
         
@@ -126,6 +128,7 @@ class MarketerTransactions(GenericAPIView):
     filterset_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
     search_fields = ['type', 'status','day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'inviter_sales_percentage', 'inviter_price']
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
+    ordering = ['-created_at']
     
     def get(self, request, *args, **kwargs):
         invite_code = self.request.user.id
@@ -170,7 +173,8 @@ class StudentTransactions(GenericAPIView):
     filterset_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
     search_fields = ['type', 'status','day_period', 'price', 'created_at', 'paid', 'description', 'ref_id', 'inviter_sales_percentage', 'inviter_price']
     ordering_fields = ['type', 'status', 'user', 'day_period', 'price', 'created_at', 'paid', 'description', 'ref_id','inviter_sales_percentage', 'inviter_price']
-
+    ordering = ['-created_at']
+    
     def get(self, request, *args, **kwargs):
         invite_code = self.request.user.id
         invited_user = self.filter_queryset(Subscription.objects.filter(user__user__invite_code=invite_code))

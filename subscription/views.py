@@ -17,7 +17,7 @@ from datetime import datetime
 from django.shortcuts import redirect
 import decimal
 from datetime import timedelta
-
+from decimal import Decimal
 
 
 class StudentSubs(APIView):
@@ -140,7 +140,35 @@ class AddGiftSubPay(APIView):
 
         student = StudentProfile.objects.get(user=user)
         data["user"] = student.id
+        discount_code = data.get("discount_code")
 
+        discount_amount = 0
+
+        if discount_code:
+            try:
+                discount = DiscountCode.objects.get(code=discount_code)
+                if student.institute:
+                    if not discount.institute or discount.institute != student.institute:
+                        return Response(
+                            "This discount code is not valid for your institute.",
+                            status=400,
+                        )
+                else:
+                    return Response(
+                        "You are not associated with any institute or freelance.",
+                        status=400,
+                    )
+                if not discount.use_code():
+                    return Response(
+                        "This discount code is no longer valid or expired.",
+                        status=400,
+                    )
+
+                discount_amount = discount.discount_percentage / 100
+
+            except:
+                return Response("Discount code not found or something went wrong.", status=404)
+                    
         serializer = self.serializer_class(data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -156,6 +184,8 @@ class AddGiftSubPay(APIView):
                     inviter_sales_percentage = decimal.Decimal('0.08')
 
             sub = Subscription.objects.get(id=serializer.data['id'])
+            sub_discount = sub.price - (sub.price * Decimal(str(discount_amount)))
+            sub.save()
             default_price = DefaultPrice.objects.all().last()
 
             if student.parent_type() == "Institute":
@@ -166,7 +196,7 @@ class AddGiftSubPay(APIView):
                 apportionment = sub.price * appor_percent
                 inviter_price = float(apportionment) * float(inviter_sales_percentage)
                 studyways_price = float(apportionment) - inviter_price 
-                institute_price = float(sub.price) - float(apportionment)
+                institute_price = float(sub_discount) - float(apportionment)
                 sub.institute_price = institute_price
 
             else:
@@ -252,23 +282,23 @@ class AddSubPay(APIView):
                     if not discount.institute or discount.institute != student.institute:
                         return Response(
                             "This discount code is not valid for your institute.",
-                            status=status.HTTP_400_BAD_REQUEST,
+                            status=400,
                         )
                 else:
                     return Response(
                         "You are not associated with any institute or freelance.",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status=400,
                     )
                 if not discount.use_code():
                     return Response(
                         "This discount code is no longer valid or expired.",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        status=400,
                     )
 
                 discount_amount = discount.discount_percentage / 100
 
-            except DiscountCode.DoesNotExist:
-                return Response("Discount code not found.", status=status.HTTP_404_NOT_FOUND)
+            except:
+                return Response("Discount code not found or something went wrong.", status=404)
 
         serializer = self.serializer_class(data=data, partial=True)
         if serializer.is_valid():
@@ -286,7 +316,7 @@ class AddSubPay(APIView):
                 sales_percentage = decimal.Decimal('0.0')
 
             sub = Subscription.objects.get(id=serializer.data['id'])
-            sub_discount = sub.price - (sub.price * discount_amount)
+            sub_discount = sub.price - (sub.price * Decimal(str(discount_amount)))
             sub.save()
             default_price = DefaultPrice.objects.all().last()
 
