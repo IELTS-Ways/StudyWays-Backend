@@ -154,28 +154,27 @@ class DiscountCode(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Active')
     limit_days = models.IntegerField(blank=True, null=True)
     usage_limit = models.IntegerField(blank=True, null=True)
-    usage_count = models.IntegerField(blank=True, null=True)
+    usage_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_active(self):
-        current_date = now()
         if self.status == 'Expired':
             return False
-        if self.limit_days and current_date > self.created_at + timedelta(days=self.limit_days):
+        if self.limit_days and now() > self.created_at + timedelta(days=self.limit_days):
             return False
         if self.usage_limit and self.usage_count >= self.usage_limit:
             return False
         return True
 
     def use_code(self):
-        if self.is_active():
-            self.usage_count += 1
-            if self.usage_limit and self.usage_count >= self.usage_limit:
-                self.status = 'Expired'
-            self.save()
-            return True
-        return False
-    
+        if not self.is_active():
+            return False
+        self.usage_count += 1
+        if self.usage_limit and self.usage_count >= self.usage_limit:
+            self.status = 'Expired'
+        self.save()
+        return True
+
     def days_remaining(self):
         if not self.limit_days:
             return None
@@ -184,4 +183,4 @@ class DiscountCode(models.Model):
         return max(0, remaining_days)
 
     def __str__(self):
-        return f"{self.code} ({self.discount_percentage}% off)"
+        return f"{self.code} ({self.discount_percentage}% off) - {self.status}"
