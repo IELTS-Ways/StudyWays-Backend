@@ -4,7 +4,6 @@ import datetime
 from file.models import File
 import shortuuid
 
-
 class Service(models.Model):
     type_choices = (
         ("Audio-Video-Scripter", "Audio-Video-Scripter"),
