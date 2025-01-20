@@ -297,8 +297,8 @@ class AddSubPay(APIView):
 
                 discount_amount = discount.discount_percentage / 100
 
-            except:
-                return Response("Discount code not found or something went wrong.", status=404)
+            except Exception as e:
+                return Response(f"error: {str(e)}", status=404)
 
         serializer = self.serializer_class(data=data, partial=True)
         if serializer.is_valid():
@@ -319,7 +319,7 @@ class AddSubPay(APIView):
             sub_discount = sub.price - (sub.price * Decimal(str(discount_amount)))
             sub.save()
             default_price = DefaultPrice.objects.all().last()
-
+            print(sub_discount)
             if student.parent_type() == "Institute":
                 sub.institute = student.institute
                 sub.save()
