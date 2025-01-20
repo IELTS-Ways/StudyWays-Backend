@@ -27,6 +27,7 @@ class Service(models.Model):
     lock = models.BooleanField(default=False)
     missing_words = models.IntegerField(default=0)
     device = models.CharField(max_length=100, default="unknown")
+    speed = models.CharField(max_length=100,  null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     full_result = models.JSONField(null=True, blank=True)
 
