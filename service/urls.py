@@ -1,5 +1,5 @@
 from django.urls import path
-from service.views import Services, ServicesItem, ServicesCorrection, FeedbackView, ServicesCorrectionAI, ServicesCorrectionV2, DraftServices, DraftServicesItem
+from service.views import Services, ServicesItem, ServicesCorrection, FeedbackView, ServicesCorrectionAI, ServicesCorrectionV2, DraftServices, DraftServicesItem, ServicesCorrectionV3
 from service.history import StudentHistory
 from .share import ReportShareLink
 
@@ -9,6 +9,7 @@ urlpatterns = [
     path("service-item/<int:id>/",ServicesItem.as_view(),name="service-item"),
     path("service-correction/<int:id>/",ServicesCorrection.as_view(),name="service-correction"),
     path("service-correction-v2/<int:id>/",ServicesCorrectionV2.as_view(),name="service-correction-v2"),
+    path("service-correction-v3/<int:id>/",ServicesCorrectionV3.as_view(),name="service-correction-v3"),
     path("service-correction-ai/<int:id>/",ServicesCorrectionAI.as_view(),name="service-correction-ai"),
     path("feedback", FeedbackView.as_view(), name="feedback"),
     # 
