@@ -559,6 +559,7 @@ class ServicesCorrectionV2(APIView):
             'missing_words': missing_words,
             'misspelled_words': misspelled_words,
             'misspelled_words_correct': misspelled_words_correct,
+            'words count' : f"words: {len(revised_words)} - correct: {len(revised_words) - len(misspelled_words)}",
             'highlight': highlight.strip()
         }
 
@@ -667,3 +668,257 @@ class ServicesCorrectionV2(APIView):
         except Exception as e:
             return Response({"error": f"Service not found or something went wrong. Error: {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+class ServicesCorrectionV3(APIView):
+    serializer_class = ServiceSerializer
+    permission_classes = [AllowAny]
+
+    def clean_text(self, text, characters_to_remove):
+        return re.sub(f"[{re.escape(characters_to_remove)}]", "", text.replace('.', '. '))
+
+    def find_multiple_spellings(self, text, spellings):
+        words = text.split()
+        return [word for word in words if any(word.lower() in variants for variants in spellings.values())]
+
+    def find_hyphenated_adjectives(self, text, adjectives):
+        return [word for word in text.split() if any(adj in word.lower() for adj in adjectives)]
+    
+    def compare_texts(self, original, revised):
+        substitutions = {
+            "i'm": "i am",
+            "you're": "you are",
+            "he's": ["he is", "he has"],
+            "she's": ["she is", "she has"],
+            "it's": ["it is", "it has"],
+            "we're": "we are",
+            "they're": "they are",
+            "can't": "cannot",
+            "don't": "do not",
+            "didn't": "did not",
+            "won't": "will not",
+            "haven't": "have not",
+            "hadn't": "had not",
+            "couldn't": "could not",
+            "shouldn't": "should not",
+            "wouldn't": "would not",
+            "doesn't": "does not",
+            "isn't": "is not",
+            "aren't": "are not",
+            "wasn't": "was not",
+            "weren't": "were not",
+            "hasn't": "has not",
+            "you'd": ["you had", "you would"],
+            "he'd": ["he had", "he would"],
+            "she'd": ["she had", "she would"],
+            "it'd": ["it had", "it would"],
+            "we'd": ["we had", "we would"],
+            "they'd": ["they had", "they would"],
+            "that's": ["that is", "that has"],
+            "there's": ["there is", "there has"],
+            "who's": ["who is", "who has"],
+            "what's": ["what is", "what has"],
+            "where's": ["where is", "where has"],
+            "when's": ["when is", "when has"],
+            "why's": ["why is", "why has"],
+            "here's": "here is",
+            # other
+        }
+
+        def normalize_text(text):
+            words = text.split()
+            normalized_words = []
+            for i, word in enumerate(words):
+                if word in substitutions:
+                    value = substitutions[word]
+                    if isinstance(value, list):
+                        previous_word = words[i-1] if i > 0 else ''
+                        next_word = words[i+1] if i < len(words)-1 else ''
+                        if previous_word in ["he", "she", "it", "who", "what", "where", "when", "why", "that", "there"]:
+                            normalized_words.append(value[0])
+                        elif next_word in ["been", "gone"]:
+                            normalized_words.append(value[1])
+                        else:
+                            normalized_words.append(value[0])
+                    else:
+                        normalized_words.append(value)
+                else:
+                    normalized_words.append(word)
+            return " ".join(normalized_words)
+
+        original = normalize_text(original.lower())
+        revised = normalize_text(revised.lower())
+
+        differ = Differ()
+        seq_match = SequenceMatcher(None, original, revised)
+        ratio = seq_match.ratio()
+        similarity_percentage = ratio * 100
+
+        original_words = original.split()
+        revised_words = revised.split()
+
+        diff_result = list(differ.compare(original_words, revised_words))
+
+        highlight_parts = []
+        missing_words = []
+        extra_words = []
+        misspelled_words = []
+        misspelled_corrections = []
+
+        irrelevant_words = set([
+            "a", "an", "the", "i", "you", "your", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
+            "in", "on", "at", "by", "to", "from", "with", "about", "for", "of", "after", "before",
+            "and", "but", "or", "so", "yet", "nor",
+            "is", "are", "am", "was", "were", "be", "being", "been", "do", "does", "did", "have", "has", "had",
+            "will", "would", "shall", "should", "can", "could", "may", "might", "must",
+            "very", "too", "also", "just", "now", "then", "here", "there", "when", "where", "why", "how",
+            "this", "that", "these", "those", "some", "any", "each", "every", "no", "many", "few", "all", "both", "half"
+        ])
+
+        idx = 0
+        while idx < len(diff_result):
+            diff = diff_result[idx]
+            
+            if diff.startswith('- '):  
+                missing_word = diff[2:]
+                missing_words.append(missing_word)
+                highlight_parts.append(f"<span style='color:blue'>{missing_word}</span>")
+                idx += 1
+            
+            elif diff.startswith('+ '):  
+                revised_word = diff[2:]
+
+                if highlight_parts and "color:blue" in highlight_parts[-1]:
+                    last_missing_word = highlight_parts.pop() 
+                    corrected_word = last_missing_word.replace("color:blue", "color:red") 
+                    
+                    highlight_parts.append(f"<span style='color:gray'>{revised_word}</span> {corrected_word}")
+                    if last_missing_word not in irrelevant_words:
+                        misspelled_corrections.append(last_missing_word)
+                else:
+                    extra_words.append(revised_word)
+                    highlight_parts.append(f"<span style='color:purple'>{revised_word}</span>")
+                
+                idx += 1
+
+            elif diff.startswith('  '): 
+                highlight_parts.append(diff[2:])
+                idx += 1
+
+            else:
+                idx += 1  
+
+        highlight = " ".join(highlight_parts)
+
+
+        return {
+            'similarity_percentage': similarity_percentage,
+            'missing_words': missing_words,
+            'extra_words': extra_words,
+            'misspelled_words': misspelled_words,
+            'misspelled_corrections': misspelled_corrections,
+            'highlight': highlight.strip()
+        }
+
+
+    def compare_punctuation(self, user_text, original_text):
+        characters_to_remove = r"$%@*#/"
+        original_text = re.sub(f"[{re.escape(characters_to_remove)}]", "", original_text)
+        user_text = re.sub(f"[{re.escape(characters_to_remove)}]", "", user_text)
+
+        punctuation_marks = ",!#$%@*.?-—;:'"
+        highlighted_text = ""
+        matcher = SequenceMatcher(None, original_text, user_text, autojunk=False)
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if j1 >= len(user_text):
+                break
+
+            if tag == 'equal':
+                highlighted_text += user_text[j1:j2]
+            elif tag == 'replace':
+                for i, j in zip(range(i1, i2), range(j1, j2)):
+                    if j >= len(user_text):
+                        break
+                    if original_text[i].isupper() != user_text[j].isupper():
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{user_text[j]}</mark>'
+                    elif user_text[j] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{user_text[j]}</span>'
+                    else:
+                        highlighted_text += user_text[j]
+            elif tag == 'delete':
+                for i in range(i1, i2):
+                    if i >= len(user_text):
+                        break
+                    if original_text[i] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{original_text[i]}</span>'
+            elif tag == 'insert':
+                for j in range(j1, j2):
+                    if j >= len(user_text):
+                        break
+                    if user_text[j] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{user_text[j]}</span>'
+                    else:
+                        highlighted_text += user_text[j]
+
+        return highlighted_text
+
+
+
+
+
+    def get(self, request, *args, **kwargs):
+        try:
+            service = get_object_or_404(Service, id=self.kwargs["id"])
+            serializer = self.serializer_class(service)
+
+            characters_to_remove = ",!#$%@*.?/"
+            service_file_script = self.clean_text(service.file.script, characters_to_remove)
+            service_text = self.clean_text(service.text, characters_to_remove)
+            
+            multiple_spellings = {item.US: [item.US, item.UK] for item in MultipleSpellings.objects.all()}
+            hyphenated_adjectives = list(HyphenatedAdjectives.objects.values_list('US', flat=True))
+
+            differences = self.compare_texts(service_file_script, service_text)
+            punctuation_result = self.compare_punctuation(service.text, service.file.script)
+
+            multiple_spellings_found = self.find_multiple_spellings(service_text, multiple_spellings)
+            hyphenated_adjectives_found = self.find_hyphenated_adjectives(service_file_script, hyphenated_adjectives)
+
+            UK = []
+            US = []
+            for MS_item in MultipleSpellings.objects.all():
+                for item in multiple_spellings_found:
+                    if item == MS_item.UK:
+                        UK.append(item)
+                        US.append(MS_item.US)
+                    elif item == MS_item.US:
+                        US.append(item)
+                        UK.append(MS_item.UK)
+            multiple_spellings_full = {"UK":UK,"US":US}
+
+            missing_words_final = [
+                word for word in differences['missing_words']
+                if word.lower() not in (w.lower() for w in differences['misspelled_words'])
+            ]
+
+            correction_data = {
+                "file_user": StudentProfileSerializer(service.user).data,
+                "file_data": FileSerializer(service.file).data,
+                "file_script": service.file.script,
+                "student_text": service_text,
+                "differences": differences,
+                "missing_words_final": missing_words_final,
+                "multiple_spellings": multiple_spellings_found,
+                "multiple_spellings_full": multiple_spellings_full,
+                "hyphenated_adjectives": hyphenated_adjectives_found,
+                "punctuation": punctuation_result
+            }
+
+            data = {"service_data": serializer.data, "correction_data": correction_data}
+            service.full_result = data
+            service.save()
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"Service not found or something went wrong. Error: {e}"}, status=status.HTTP_400_BAD_REQUEST)
