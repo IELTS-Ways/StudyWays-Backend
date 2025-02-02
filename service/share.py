@@ -70,7 +70,7 @@ class ReportShareLink(APIView):
                 return Response({"error": "No valid parent relationship found."}, status=403)
 
         report_id = report_sharing.report.id
-        target_url = request.build_absolute_uri(reverse('service-correction-v2', kwargs={'id': report_id}))
+        target_url = request.build_absolute_uri(reverse('service-correction-v3', kwargs={'id': report_id}))
         response = requests.get(target_url)
 
         return Response(response.json(), status=response.status_code)
