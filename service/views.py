@@ -559,7 +559,10 @@ class ServicesCorrectionV2(APIView):
             'missing_words': missing_words,
             'misspelled_words': misspelled_words,
             'misspelled_words_correct': misspelled_words_correct,
-            'words count' : f"words: {len(revised_words)} - correct: {len(revised_words) - len(misspelled_words)}",
+            "words_count": {
+                "total": len(revised_words),
+                "correct": len(revised_words) - len(misspelled_words),
+            },
             'highlight': highlight.strip()
         }
 
