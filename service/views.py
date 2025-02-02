@@ -454,6 +454,7 @@ class ServicesCorrectionV2(APIView):
         }
 
         def normalize_text(text):
+            text = text.replace("’", "'")
             words = text.split()
             normalized_words = []
             for i, word in enumerate(words):
@@ -725,10 +726,12 @@ class ServicesCorrectionV3(APIView):
             "when's": ["when is", "when has"],
             "why's": ["why is", "why has"],
             "here's": "here is",
+            "name's": "name is"
             # other
         }
 
         def normalize_text(text):
+            text = text.replace("’", "'")
             words = text.split()
             normalized_words = []
             for i, word in enumerate(words):
@@ -812,6 +815,8 @@ class ServicesCorrectionV3(APIView):
                 idx += 1  
 
         highlight = " ".join(highlight_parts)
+        
+        highlight = re.sub(r'\b[i]\b', 'I', highlight)
 
 
         return {
@@ -820,6 +825,10 @@ class ServicesCorrectionV3(APIView):
             'extra_words': extra_words,
             'misspelled_words': misspelled_words,
             'misspelled_corrections': misspelled_corrections,
+            "words_count": {
+                "total": len(revised_words),
+                "correct": len(revised_words) - len(misspelled_words),
+            },
             'highlight': highlight.strip()
         }
 
