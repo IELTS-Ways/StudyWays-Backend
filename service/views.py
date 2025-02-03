@@ -799,8 +799,10 @@ class ServicesCorrectionV3(APIView):
                     corrected_word = last_missing_word.replace("color:blue", "color:red") 
                     
                     highlight_parts.append(f"<span style='color:gray'>{revised_word}</span> {corrected_word}")
-                    if last_missing_word not in irrelevant_words:
-                        misspelled_corrections.append(last_missing_word)
+                    
+                    cleaned_word = re.sub(r'<.*?>', '', last_missing_word)
+                    if cleaned_word not in irrelevant_words:
+                        misspelled_corrections.append(cleaned_word)
                 else:
                     extra_words.append(revised_word)
                     highlight_parts.append(f"<span style='color:purple'>{revised_word}</span>")
