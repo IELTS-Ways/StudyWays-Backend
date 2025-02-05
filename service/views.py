@@ -769,7 +769,7 @@ class ServicesCorrectionV3(APIView):
         missing_words = []
         extra_words = []
         misspelled_words = []
-        misspelled_corrections = []
+        misspelled_words_correct = []
 
         irrelevant_words = set([
             "a", "an", "the", "i", "you", "your", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
@@ -802,7 +802,8 @@ class ServicesCorrectionV3(APIView):
                     
                     cleaned_word = re.sub(r'<.*?>', '', last_missing_word)
                     if cleaned_word not in irrelevant_words:
-                        misspelled_corrections.append(cleaned_word)
+                        misspelled_words_correct.append(cleaned_word)
+                        misspelled_words.append(cleaned_word) 
                 else:
                     extra_words.append(revised_word)
                     highlight_parts.append(f"<span style='color:purple'>{revised_word}</span>")
@@ -826,7 +827,7 @@ class ServicesCorrectionV3(APIView):
             'missing_words': missing_words,
             'extra_words': extra_words,
             'misspelled_words': misspelled_words,
-            'misspelled_corrections': misspelled_corrections,
+            'misspelled_words_correct': misspelled_words_correct,
             "words_count": {
                 "total": len(revised_words),
                 "correct": len(revised_words) - len(misspelled_words),
@@ -909,6 +910,8 @@ class ServicesCorrectionV3(APIView):
                     elif item == MS_item.US:
                         US.append(item)
                         UK.append(MS_item.UK)
+            UK = list(dict.fromkeys(UK))
+            US = list(dict.fromkeys(US))
             multiple_spellings_full = {"UK":UK,"US":US}
 
             missing_words_final = [
