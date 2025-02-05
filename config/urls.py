@@ -34,6 +34,7 @@ urlpatterns = [
     path("subscription/", include("subscription.urls")),
     path("service/", include("service.urls")),
     path("contact/", include("contact.urls")),
+    path("spelling/", include("spelling.urls")),
     path("auth/", include('drf_social_oauth2.urls', namespace="drf")),
     path("google-signup/", views.GoogleAuthRedirect.as_view()),
     path("google-redirect/", views.GoogleRedirectURIView.as_view()),

@@ -93,6 +93,7 @@ LOCAL_APPS = (
     "blog",
     "service",
     "contact",
+    "spelling",
 )
 
 
