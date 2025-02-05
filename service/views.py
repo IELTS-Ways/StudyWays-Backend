@@ -806,7 +806,7 @@ class ServicesCorrectionV3(APIView):
                         misspelled_words.append(cleaned_word) 
                 else:
                     extra_words.append(revised_word)
-                    highlight_parts.append(f"<span style='color:purple'>{revised_word}</span>")
+                    highlight_parts.append(f"<span style='color:purple;text-decoration:line-through'>({revised_word})</span>")
                 
                 idx += 1
 
