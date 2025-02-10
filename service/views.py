@@ -752,6 +752,9 @@ class ServicesCorrectionV3(APIView):
                     normalized_words.append(word)
             return " ".join(normalized_words)
 
+        word_count = len(revised.split())
+        miss_count = len(original.split()) - len(revised.split())
+        
         original = normalize_text(original.lower())
         revised = normalize_text(revised.lower())
 
@@ -829,8 +832,8 @@ class ServicesCorrectionV3(APIView):
             'misspelled_words': misspelled_words,
             'misspelled_words_correct': misspelled_words_correct,
             "words_count": {
-                "total": len(revised_words),
-                "correct": len(revised_words) - len(misspelled_words),
+                "total": word_count,
+                "missed": miss_count,
             },
             'highlight': highlight.strip()
         }
