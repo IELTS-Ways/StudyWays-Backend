@@ -19,7 +19,6 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 
 
-
 def index(request):
     return render(request, 'index.html')
 
@@ -31,7 +30,6 @@ class GoogleAuthRedirect(View):
     def get(self, request):
         redirect_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={SOCIAL_AUTH_GOOGLE_OAUTH2_KEY}&response_type=code&scope=https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email&access_type=offline&redirect_uri=https://api.studyways.ir/google-redirect/"
         return redirect(redirect_url)
-
 
 
 
