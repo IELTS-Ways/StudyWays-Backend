@@ -52,7 +52,7 @@ class GoogleRedirectURIView(APIView):
             'grant_type': 'authorization_code',
         }
 
-        response = requests.post(token_endpoint, data=token_params)
+        response = requests.post(token_endpoint, data=token_params, verify=False)
 
         if response.status_code != 200:
             return Response({"error": "Failed to exchange code for token"}, status=status.HTTP_400_BAD_REQUEST)
