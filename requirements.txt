@@ -14,7 +14,8 @@ django-cors-headers==3.13.0
 uvloop==0.21.0
 httptools==0.6.4
 coverage==6.4.4
-requests
+requests==2.32.3
+urllib3==2.3.0
 whitenoise
 django-ckeditor==6.5.0
 django-import-export==4.0.0
