@@ -142,6 +142,8 @@ class File(models.Model):
         ("Tactics for Listening", "Tactics for Listening"),
         ("Active Listening", "Active Listening"),
         ("Magazine", "Magazine"),
+        ("Speak Now", "Speak Now"),
+        ("Tune In", "Tune In"),
         ("Active Skills for Reading", "Active Skills for Reading"),
         ("Ready For", "Ready For"),
         ("6 Minute English", "6 Minute English"),
