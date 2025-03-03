@@ -850,36 +850,35 @@ class ServicesCorrectionV3(APIView):
 
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
             if j1 >= len(user_text):
-                break
+                break  
 
             if tag == 'equal':
                 highlighted_text += user_text[j1:j2]
             elif tag == 'replace':
-                for i, j in zip(range(i1, i2), range(j1, j2)):
-                    if j >= len(user_text):
-                        break
-                    if original_text[i].isupper() != user_text[j].isupper():
-                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{user_text[j]}</mark>'
-                    elif user_text[j] in punctuation_marks:
-                        highlighted_text += f'<span style="color:blue;">{user_text[j]}</span>'
+                user_segment = user_text[j1:j2]  # متن جایگزین از کاربر
+                original_segment = original_text[i1:i2]  # متن اصلی جایگزین‌شده
+            
+                for i in range(len(user_segment)):  
+                    if i < len(original_segment) and original_segment[i].isupper() != user_segment[i].isupper():
+                        highlighted_text += f'<mark style="background-color:#f54c5a; color:white;">{user_segment[i]}</mark>'
+                    elif user_segment[i] in punctuation_marks:
+                        highlighted_text += f'<span style="color:blue;">{user_segment[i]}</span>'
                     else:
-                        highlighted_text += user_text[j]
+                        highlighted_text += user_segment[i]
+
             elif tag == 'delete':
                 for i in range(i1, i2):
-                    if i >= len(user_text):
-                        break
-                    if original_text[i] in punctuation_marks:
+                    if i < len(original_text) and original_text[i] in punctuation_marks:
                         highlighted_text += f'<span style="color:blue;">{original_text[i]}</span>'
             elif tag == 'insert':
                 for j in range(j1, j2):
-                    if j >= len(user_text):
-                        break
-                    if user_text[j] in punctuation_marks:
+                    if j < len(user_text) and user_text[j] in punctuation_marks:
                         highlighted_text += f'<span style="color:blue;">{user_text[j]}</span>'
                     else:
                         highlighted_text += user_text[j]
 
         return highlighted_text
+
 
 
 
