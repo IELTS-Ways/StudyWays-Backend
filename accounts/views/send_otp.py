@@ -206,7 +206,7 @@ class EmailSendOTP(APIView):
         )
 
 
-        otp_code = str(random.randint(100000, 999999))
+        otp_code = str(random.randint(1000, 9999))
         otp_id = str(uuid.uuid4())
 
         cache.set(otp_id, {"email": email, "otp_code": otp_code}, timeout=EMAIL_OTP_EXPIRATION)
