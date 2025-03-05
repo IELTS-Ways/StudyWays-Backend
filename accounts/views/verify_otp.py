@@ -124,3 +124,66 @@ class VerifyEmailOTP(APIView):
             {"success": True, "message": _("Email verified and updated successfully.")},
             status=status.HTTP_200_OK,
         )
+
+
+
+
+
+# smtp verify
+class EmailVerifyOTP(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        otp_id = request.data.get("otp_id")
+        otp_code = request.data.get("otp_code")
+
+        if not otp_id or not otp_code:
+            return Response(
+                {"success": False, "errors": _("OTP ID and code are required.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        otp_data = cache.get(otp_id)
+        if not otp_data:
+            return Response(
+                {"success": False, "errors": _("OTP data not found or expired.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        correct_otp_code = otp_data.get("otp_code")
+
+        if otp_code != correct_otp_code:
+            return Response(
+                {"success": False, "errors": _("Invalid OTP code.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = request.user
+        cache.delete(otp_id)
+        access, refresh = login(user)
+
+        data = {
+            "refresh_token": refresh,
+            "access_token": access,
+            "user_data": UserSerializer(user).data,
+        }
+        response = Response(
+            {
+                "success": True,
+                "data": data,
+            },
+            status=status.HTTP_200_OK,
+        )
+        #print('----------------------access-----')
+        #print(access)
+        #print('---------------------------------')
+        response.set_cookie(
+            "HTTP_ACCESS",
+            f"Bearer {access}",
+            max_age=ACCESS_TTL * 24 * 3600,
+            secure=True,
+            httponly=True,
+            samesite="None",
+        )
+        return response
+

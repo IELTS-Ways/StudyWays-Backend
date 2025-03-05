@@ -1,6 +1,6 @@
 from django.urls import path
 from accounts.views import Logout,Profile,Refresh,RefreshAccess,OverView,SendOTP,VerifyOTP,EmailSendOTP,\
-    UserValidationView, VerifyAndUpdatePhoneNumber, SendUpdateOTP, VerifyEmailOTP, SendEmailOTP
+    UserValidationView, VerifyAndUpdatePhoneNumber, SendUpdateOTP, VerifyEmailOTP, SendEmailOTP, EmailVerifyOTP
 from accounts.student_views import StudentLogin,StudentOverview,StudentInstituteData,StudentFull,StudentWalletView
 from accounts.institute_views import InstituteOverview,Institute,InstituteStudent,ZarinpalMerchantID,InstituteFull,\
     InstituteStudentMultiple,InstituteStudentItem,InstitutePricing, InstituteWalletView
@@ -16,6 +16,7 @@ urlpatterns = [
     path("otp", SendOTP.as_view(), name="send_otp"),
     path("otp/verify", VerifyOTP.as_view(), name="verify_otp"),
     path("email-otp", EmailSendOTP.as_view(), name="email-otp"),
+    path("otp/email-verify", EmailVerifyOTP.as_view(), name="email-verify_otp"),
     path("refresh", Refresh.as_view(), name="refresh"),
     path("refresh-access", RefreshAccess.as_view(), name="refresh-access"),
     path("logout", Logout.as_view(), name="logout"),
