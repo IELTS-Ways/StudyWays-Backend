@@ -14,8 +14,13 @@ from django.core.mail import EmailMessage
 import random
 import uuid
 from accounts.models import User
+from accounts.utils import random_with_N_digits
+
 
 phone_number_regex = re.compile(r"^09\d{9}")
+EMAIL_OTP_EXPIRATION = 300  # 5 minutes
+EMAIL_OTP_SENT_CACHE_KEY = "email_otp_sent_{}"
+email_regex = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 
 
 class OTPThrottle(AnonRateThrottle):
@@ -172,5 +177,60 @@ class SendEmailOTP(APIView):
         except Exception as e:
             return Response(
                 {"success": False, "errors": [_("Something went wrong.")]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+
+
+
+class EmailSendOTP(APIView):
+    permission_classes = []
+    # throttle_classes = [OTPThrottle]
+
+    def post(self, *args, **kwargs):
+        email = self.request.data.get("email")
+        if not email_regex.match(email):
+            return Response(
+                {"success": False, "errors": [_("invalid email")]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if OneTimePassword.otp_exist(email) or cache.get(EMAIL_OTP_SENT_CACHE_KEY.format(email)):
+            return Response(
+                {"success": False, "errors": [_("OTP already sent. Please wait before retrying.")]},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        user, created = User.objects.get_or_create(
+            email=email,defaults={"username": email, "phone_number": f"09{random.randint(100000000, 999999999)}"}
+        )
+
+
+        otp_code = str(random.randint(100000, 999999))
+        otp_id = str(uuid.uuid4())
+
+        cache.set(otp_id, {"email": email, "otp_code": otp_code}, timeout=EMAIL_OTP_EXPIRATION)
+        cache.set(f"email_otp_sent_{email}", True, timeout=60)
+
+        subject = "Email Verification Code"
+        message = f"Your verification code is: {otp_code}"
+        recipient_list = [email]
+
+        try:
+            email_message = EmailMessage(
+                subject=subject,
+                body=message,
+                from_email=None,
+                to=recipient_list,
+                headers={"x-liara-tag": "email-verification"},
+            )
+            email_message.send()
+            return Response(
+                {"success": True, "data": {"otp_id": otp_id}},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"success": False, "errors": [_("Something went wrong - {}".format(e))]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
