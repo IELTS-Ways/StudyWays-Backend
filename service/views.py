@@ -688,7 +688,7 @@ class ServicesCorrectionV3(APIView):
     def find_hyphenated_adjectives(self, text, adjectives):
         return [word for word in text.split() if any(adj in word.lower() for adj in adjectives)]
     
-    def compare_texts(self, original, revised):
+    def compare_texts(self, original_text, revised):
         substitutions = {
             "i'm": "i am",
             "you're": "you are",
@@ -752,10 +752,30 @@ class ServicesCorrectionV3(APIView):
                     normalized_words.append(word)
             return " ".join(normalized_words)
 
-        word_count = len(revised.split())
-        miss_count = len(original.split()) - len(revised.split())
+        def restore_original_case(original, corrected_words):
+            """
+            این تابع لیست کلمات اصلاح‌شده را دریافت می‌کند
+            و نسخه اصلی آن‌ها را از متن اصلی برمی‌گرداند
+            تا حروف بزرگ و کوچک‌شان حفظ شود.
+            """
+            original_words = original.split()
+            corrected_case_words = []
+
+            for word in corrected_words:
+                for orig_word in original_words:
+                    if orig_word.lower() == word.lower():
+                        corrected_case_words.append(orig_word)
+                        print(corrected_case_words)
+                        break
+                else:
+                    corrected_case_words.append(word)
+            
+            return corrected_case_words
         
-        original = normalize_text(original.lower())
+        word_count = len(revised.split())
+        miss_count = len(original_text.split()) - len(revised.split())
+        
+        original = normalize_text(original_text.lower())
         revised = normalize_text(revised.lower())
 
         differ = Differ()
@@ -824,6 +844,7 @@ class ServicesCorrectionV3(APIView):
         
         highlight = re.sub(r'\b[i]\b', 'I', highlight)
 
+        misspelled_words_correct = restore_original_case(original_text, misspelled_words_correct)
 
         return {
             'similarity_percentage': similarity_percentage,
@@ -855,8 +876,8 @@ class ServicesCorrectionV3(APIView):
             if tag == 'equal':
                 highlighted_text += user_text[j1:j2]
             elif tag == 'replace':
-                user_segment = user_text[j1:j2]  # متن جایگزین از کاربر
-                original_segment = original_text[i1:i2]  # متن اصلی جایگزین‌شده
+                user_segment = user_text[j1:j2]
+                original_segment = original_text[i1:i2]
             
                 for i in range(len(user_segment)):  
                     if i < len(original_segment) and original_segment[i].isupper() != user_segment[i].isupper():
