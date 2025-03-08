@@ -134,37 +134,15 @@ class EmailVerifyOTP(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        otp_id = request.data.get("otp_id")
-        otp_code = request.data.get("otp_code")
-
-        if not otp_id or not otp_code:
-            return Response(
-                {"success": False, "errors": _("OTP ID and code are required.")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        otp_data = cache.get(otp_id)
-        if not otp_data:
-            return Response(
-                {"success": False, "errors": _("OTP data not found or expired.")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        correct_otp_code = otp_data.get("otp_code")
-
-        if otp_code != correct_otp_code:
-            return Response(
-                {"success": False, "errors": _("Invalid OTP code.")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
+        otp_id = self.request.data.get("otp_id", "")
+        otp_code = self.request.data.get("otp_code", "")
         try:
             user_id = OneTimePassword.verify_otp(otp_id, otp_code)
         except ValueError as e:
             error_detail = str(e)
             return Response({"success": False, "errors": error_detail}, status=status.HTTP_400_BAD_REQUEST)
-        user = get_user(id=user_id) # self.request.user #
-        cache.delete(otp_id)
+        user = get_user(id=user_id)  # self.request.user #
+
         access, refresh = login(user)
 
         data = {
