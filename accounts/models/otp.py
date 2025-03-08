@@ -42,16 +42,7 @@ class OneTimePassword:
             raise ValueError("otp is invalid. {} -- {} ".format(otp_id, otp_code))
 
         value = cache.get(otp_id)
-
-        # Ensure value is a string before calling json.loads()
-        if isinstance(value, str):
-            data = json.loads(value)  # Deserialize if it's a JSON string
-        elif isinstance(value, dict):
-            data = value  # Already a dictionary, no need to load JSON
-        else:
-            raise TypeError("Unexpected type from cache: {}".format(type(value)))
-
-        #data = json.loads(value)
+        data = json.loads(value)
 
         if not check_password("{}{}".format(otp_id, otp_code), data.get("hash")):
             raise ValueError(f"otp is invalid. check_password: {otp_id} - {otp_code} - {data.get('hash')} - ")

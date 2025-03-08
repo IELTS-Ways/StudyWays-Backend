@@ -205,15 +205,9 @@ class EmailSendOTP(APIView):
         )
 
         otp = OneTimePassword(user)
-        #done = send_sms_otp(phone_number, otp.code)
-        otp_code = otp.code
-        otp_id = otp.otp_id
-
-        cache.set(otp_id, {"email": email, "otp_code": otp_code}, timeout=EMAIL_OTP_EXPIRATION)
-        cache.set(f"email_otp_sent_{email}", True, timeout=60)
 
         subject = "Email Verification Code"
-        message = f"Your verification code is: {otp_code}"
+        message = f"Your verification code is: {otp.code}"
         recipient_list = [email]
 
         try:
@@ -226,7 +220,7 @@ class EmailSendOTP(APIView):
             )
             email_message.send()
             return Response(
-                {"success": True, "data": {"otp_id": otp_id}},
+                {"success": True, "data": {"otp_id": otp.otp_id}},
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
