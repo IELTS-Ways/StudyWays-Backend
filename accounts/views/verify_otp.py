@@ -191,4 +191,3 @@ class EmailVerifyOTP(APIView):
             samesite="None",
         )
         return response
-

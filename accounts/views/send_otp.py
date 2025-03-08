@@ -183,7 +183,6 @@ class SendEmailOTP(APIView):
 
 
 
-
 class EmailSendOTP(APIView):
     permission_classes = []
     # throttle_classes = [OTPThrottle]
