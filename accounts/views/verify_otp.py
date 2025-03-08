@@ -9,7 +9,7 @@ from accounts.selectors import get_user
 from config.settings import ACCESS_TTL
 from accounts.serializers import UserSerializer
 from django.core.cache import cache
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 class VerifyOTP(APIView):
     permission_classes = []
@@ -131,7 +131,7 @@ class VerifyEmailOTP(APIView):
 
 # smtp verify
 class EmailVerifyOTP(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         otp_id = request.data.get("otp_id")
@@ -158,7 +158,12 @@ class EmailVerifyOTP(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user = request.user
+        try:
+            user_id = OneTimePassword.verify_otp(otp_id, otp_code)
+        except ValueError as e:
+            error_detail = str(e)
+            return Response({"success": False, "errors": error_detail}, status=status.HTTP_400_BAD_REQUEST)
+        user = get_user(id=user_id) # self.request.user #
         cache.delete(otp_id)
         access, refresh = login(user)
 

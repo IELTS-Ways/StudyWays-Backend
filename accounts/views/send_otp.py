@@ -205,9 +205,10 @@ class EmailSendOTP(APIView):
             email=email,defaults={"username": email, "phone_number": f"09{random.randint(100000000, 999999999)}"}
         )
 
-
-        otp_code = str(random.randint(1000, 9999))
-        otp_id = str(uuid.uuid4())
+        otp = OneTimePassword(user)
+        #done = send_sms_otp(phone_number, otp.code)
+        otp_code = otp.code
+        otp_id = otp.otp_id
 
         cache.set(otp_id, {"email": email, "otp_code": otp_code}, timeout=EMAIL_OTP_EXPIRATION)
         cache.set(f"email_otp_sent_{email}", True, timeout=60)
