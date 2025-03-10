@@ -20,8 +20,8 @@ class User(AbstractUser):
     user_type_choices = (
         ("student", "student"),
         ("institute", "institute"),
-        ("freelance", "freelance"),
-        ("marketer", "marketer"),
+        #("freelance", "freelance"),
+        #("marketer", "marketer"),
         ("admin", "admin"),
         ("unknown", "unknown"),)
 
