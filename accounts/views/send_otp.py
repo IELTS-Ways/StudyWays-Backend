@@ -206,7 +206,7 @@ class EmailSendOTP(APIView):
 
         otp = OneTimePassword(user)
 
-        subject = "Email Verification Code"
+        subject = "StudyWays Email Verification Code"
         message = f"Your verification code is: {otp.code}"
         recipient_list = [email]
 
@@ -214,7 +214,7 @@ class EmailSendOTP(APIView):
             email_message = EmailMessage(
                 subject=subject,
                 body=message,
-                from_email=None,
+                from_email="studyways@studyways.ir",
                 to=recipient_list,
                 headers={"x-liara-tag": "email-verification"},
             )
