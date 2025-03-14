@@ -37,7 +37,7 @@ class DiscountItem(APIView):
             return [IsStudent()]
         elif self.request.method == 'DELETE':
             return [IsInstitute()]
-        return super().get_permissions()
+        return super().get_permissions() or []
     
     def get(self, *args, **kwargs):
         try:
