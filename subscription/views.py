@@ -470,7 +470,15 @@ class BOGOSubPay(APIView):
         status = self.request.query_params.get("Status")
 
         data = self.request.data
+        data["type"] = "Audio-Video-Scripter"
+
         student = StudentProfile.objects.get(user=self.request.user)
+
+        if data["empty_wallet"]:
+            wallet = StudentWallet.objects.get(user=student)
+            wallet.balance = 0
+            wallet.save()
+
         data["user"] = student.id
         serializer = self.serializer_class(data=data, partial=True)
         if serializer.is_valid():
