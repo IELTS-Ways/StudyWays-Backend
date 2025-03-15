@@ -2,7 +2,7 @@ from django.urls import path
 from subscription.views import StudentSubs, AddSub, AddSubPay, SubPayVerify, Membership, WithdrawRequest, BOGOVerify, BOGOSubPay, ActivateFreeTrialView, AddGiftSub, AddGiftSubPay
 from subscription.transactions import FreelanceTransactions, MarketerTransactions,InstituteTransactions, StudentTransactions
 from subscription.discount import Discount, DiscountItem
-from subscription.wallet_pay import CheckWallet, CheckWalletAndPay
+from subscription.wallet_pay import CheckWallet, CheckWalletAndPay, WalletAndBOGOPay
 
 urlpatterns = [
     path("student-subs", StudentSubs.as_view(), name="student-subs"),
@@ -18,6 +18,7 @@ urlpatterns = [
     # new ----
     path("check-wallet", CheckWallet.as_view(), name="check-wallet"),
     path("check-wallet-pay", CheckWalletAndPay.as_view(), name="check-wallet-pay"),
+    path("wallet-bogo-pay", WalletAndBOGOPay.as_view(), name="wallet-bogo-pay"),
     #
     path("free-trial",ActivateFreeTrialView.as_view(),name="free-trial"),
     #
