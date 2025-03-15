@@ -7,6 +7,7 @@ from .models import DiscountCode
 from .serializers import DiscountCodeSerializer
 from rest_framework import status
 from accounts.models import InstituteProfile, StudentProfile
+from rest_framework import permissions
 
 class Discount(APIView):
     serializer_class = DiscountCodeSerializer
@@ -37,7 +38,8 @@ class DiscountItem(APIView):
             return [IsStudent()]
         elif self.request.method == 'DELETE':
             return [IsInstitute()]
-        return super().get_permissions() or []
+        return super().get_permissions() or [permissions.AllowAny()]
+
     
     def get(self, *args, **kwargs):
         try:
@@ -46,6 +48,7 @@ class DiscountItem(APIView):
                 code = DiscountCode.objects.get(code=self.kwargs["code"], institute=student.institute)
                 serializer = self.serializer_class(code)
                 return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response("You are not associated with an institute.", status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response("discount code not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
         
