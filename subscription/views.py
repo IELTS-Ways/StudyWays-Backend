@@ -552,6 +552,7 @@ class BOGOSubPay(APIView):
     
     
 
+
 class BOGOVerify(APIView):
     @transaction.atomic
     def get(self, *args, **kwargs):
