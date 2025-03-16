@@ -9,8 +9,12 @@ class InstituteProfile(models.Model):
     address_type_choices = (
         ("Landlord", "Landlord"),
         ("Tenant", "Tenant"),)
+    gender_type_choices = (
+        ("male", "male"),
+        ("female", "female"))
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    gender = models.CharField(max_length=20, default="male", choices=gender_type_choices)
     school_name = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     provinces = models.CharField(max_length=100, blank=True, null=True)
