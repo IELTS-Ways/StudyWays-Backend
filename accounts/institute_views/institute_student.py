@@ -25,13 +25,13 @@ class CustomPagination(PageNumberPagination):
 
 class InstituteStudent(GenericAPIView):
     permission_classes = [IsInstitute]
-    queryset = User.objects.all()
+    queryset = StudentProfile.objects.all()
     pagination_class = CustomPagination
-    serializer_class = UserSerializer
+    serializer_class = StudentProfileSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['user', 'is_IELTS_student', 'gender', 'english_level']
+    filterset_fields = ['user__id', 'is_IELTS_student', 'gender', 'english_level']
     search_fields = ['user__first_name', 'user__last_name', 'user__national_code', 'user__phone_number', 'gender']
-    ordering_fields = ['user', 'is_IELTS_student', 'gender', 'english_level']
+    ordering_fields = ['user__id', 'is_IELTS_student', 'gender', 'english_level']
 
     def get(self, *args, **kwargs):
         data = []
