@@ -43,12 +43,10 @@ class DiscountItem(APIView):
     
     def get(self, *args, **kwargs):
         try:
-            student = StudentProfile.objects.get(user=self.request.user)
-            if student.institute:
-                code = DiscountCode.objects.get(code=self.kwargs["code"], institute=student.institute)
-                serializer = self.serializer_class(code)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response("You are not associated with an institute.", status=status.HTTP_400_BAD_REQUEST)
+            code_param = self.kwargs.get("code")
+            code = DiscountCode.objects.get(code=code_param)
+            serializer = self.serializer_class(code)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response("discount code not found or something went wrong, try again", status=status.HTTP_400_BAD_REQUEST)
         
