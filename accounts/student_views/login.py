@@ -107,13 +107,10 @@ class StudentOverview(APIView):
             "Free-Trial-Status" : free_trial_status,
         }
 
-        if student.parent_type() == "Institute":
-            memory_mirror_price = student.institute.memory_mirror_price_each_day
-            audio_scripter_price = student.institute.audio_scripter_price_each_day
-        else:
-            default_price = DefaultPrice.objects.all().last()
-            memory_mirror_price = default_price.memory_mirror
-            audio_scripter_price = default_price.audio_video_scripter
+
+        default_price = DefaultPrice.objects.all().last()
+        memory_mirror_price = default_price.memory_mirror
+        audio_scripter_price = default_price.audio_video_scripter
 
         data = {
             "user": self.serializer_class(user).data,
