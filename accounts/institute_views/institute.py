@@ -64,7 +64,6 @@ class InstituteFull(APIView):
 
 
 
-
 class ZarinpalMerchantID(APIView):
     serializer_class = InstituteSerializer
     permission_classes = [IsInstitute]
