@@ -480,6 +480,25 @@ class BOGOSubPay(APIView):
             wallet.save()
 
         data["user"] = student.id
+        
+        discount_code = data.get("discount_code")
+
+        discount_amount = 0
+
+        if discount_code:
+            try:
+                discount = DiscountCode.objects.get(code=discount_code)
+                if not discount.use_code():
+                    return Response(
+                        "This discount code is no longer valid or expired.",
+                        status=400,
+                    )
+
+                discount_amount = discount.discount_percentage / 100
+
+            except Exception as e:
+                return Response(f"error: {str(e)}", status=404)
+            
         serializer = self.serializer_class(data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -494,16 +513,19 @@ class BOGOSubPay(APIView):
                 sales_percentage = decimal.Decimal('0.0')
 
             sub = Subscription.objects.get(id=serializer.data['id'])
+            sub_discount = sub.price - (sub.price * Decimal(str(discount_amount)))
+            sub.save()
             default_price = DefaultPrice.objects.all().last()
 
             sub.institute = student.institute
-            ZP_MERCHANT_ID = default_price.ZP_MERCHANT_ID
+            ZP_MERCHANT_ID = student.institute.ZP_MERCHANT_ID
             appor_percent = default_price.apportionment_percentage
             apportionment = sub.price * appor_percent
             inviter_price = float(apportionment) * float(sales_percentage)   #share with inviter
             studyways_price = float(apportionment) - inviter_price           #send to us
-            institute_price = float(sub.price) - float(apportionment)        #send to institute
+            institute_price = float(sub_discount) - float(apportionment)     #send to institute
             sub.institute_price = institute_price
+            sub.discount_amount = discount_amount
 
             sub.inviter_sales_percentage = sales_percentage
             sub.inviter_price = inviter_price
