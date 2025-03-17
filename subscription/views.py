@@ -534,7 +534,7 @@ class BOGOSubPay(APIView):
 
             data = {
                 "MerchantID": ZP_MERCHANT_ID,
-                "Amount": int(sub.price),
+                "Amount": int(sub_discount),
                 "Description": "خریداری اشتراک آنلاین استادی ویز",
                 "Authority": authority,
                 "Phone": student.user.phone_number,
