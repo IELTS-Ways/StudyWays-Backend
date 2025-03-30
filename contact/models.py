@@ -1,6 +1,4 @@
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.core.validators import RegexValidator
 
 class Contact(models.Model):
     title = models.CharField(max_length=150, blank=True, null=True)
@@ -11,7 +9,8 @@ class Contact(models.Model):
 
     def __str__(self):
         return f'{self.title} : {self.description}'
-    
+
+
 class Application(models.Model):   
     full_name = models.CharField(max_length=150, blank=True, null=True)
     phone_number = models.CharField(max_length=11, blank=True, null=True)

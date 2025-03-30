@@ -2,6 +2,7 @@ from django.contrib import admin
 from subscription.models import Subscription,DefaultPrice, Withdraw, FreeTrial, DiscountCode
 from import_export.admin import ImportExportModelAdmin
 
+
 class SubscriptionAdmin(ImportExportModelAdmin):
     list_display = ('type', 'user', 'created_at', "institute", 'expired', 'status', 'remaining_days','price','institute_price')
     list_filter = ("type", "created_at", "status","institute","freelance")
@@ -11,6 +12,7 @@ admin.site.register(Subscription, SubscriptionAdmin)
 class DefaultPriceAdmin(ImportExportModelAdmin):
     list_display = ('audio_video_scripter', 'memory_mirror', 'planner', 'fast_reading', 'id')
 admin.site.register(DefaultPrice, DefaultPriceAdmin)
+
 
 class WithdrawAdmin(ImportExportModelAdmin):
     list_display = ('user', 'status', 'created_at', 'price')
@@ -28,4 +30,3 @@ class DiscountCodeAdmin(ImportExportModelAdmin):
     list_filter = ("status",)
     search_fields = ['code', 'discount_percentage', 'limit_days', 'usage_limit']
 admin.site.register(DiscountCode, DiscountCodeAdmin)
-

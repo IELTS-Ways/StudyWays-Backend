@@ -7,7 +7,6 @@ load_dotenv()
 KEY = os.getenv('KEY')
 
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = KEY
 #ALLOWED_HOSTS = get_env("ALLOWED_HOSTS").split(",")
 ALLOWED_HOSTS = ['localhost','127.0.0.1','0.0.0.0', 'studyways.ir','liara.run']

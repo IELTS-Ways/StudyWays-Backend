@@ -2,7 +2,6 @@ from django.urls import path, re_path
 from blog.views import PostList, PostItem, InstitutePosts, StudentPosts, AddPost, upload_photo,\
     download_photo, delete_photo, PostCats
 
-
 urlpatterns = [
     path("post-cats", PostCats.as_view(), name="post-cats"),
     path("posts", PostList.as_view(), name="posts"),
@@ -14,4 +13,3 @@ urlpatterns = [
     re_path(r'^download/(?P<photo_name>.+)/$', download_photo, name='download_photo'),
     re_path(r'^delete/(?P<photo_name>.+)/$', delete_photo, name='delete_photo'),  # Update this line
 ]
-

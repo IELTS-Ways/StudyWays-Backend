@@ -8,11 +8,6 @@ from subscription.serializers import SubscriptionSerializer, FreelanceTransactio
 from subscription.models import Subscription, DefaultPrice, Withdraw
 from subscription.views import WithdrawRequest
 import json
-import requests
-from django.conf import settings
-from django.db import transaction
-from config.responses import bad_request, SuccessResponse, UnsuccessfulResponse
-from django.http import HttpResponse,JsonResponse
 from datetime import datetime
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
